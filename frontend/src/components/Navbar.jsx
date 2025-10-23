@@ -14,8 +14,8 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center">
-      <div className="glass flex items-center justify-between w-full max-w-6xl mx-auto rounded-2xl px-8 py-4 shadow-lg">
+    <nav className="fixed top-6 left-0 right-0 z-50 rounded-full flex justify-center">
+      <div className="glass flex items-center justify-between w-full max-w-6xl mx-auto rounded-4xl px-8 py-4 shadow-lg">
         <div className="flex-shrink-0 flex justify-start">
           <Link
             to="/"

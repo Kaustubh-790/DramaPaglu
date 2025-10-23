@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Tilt from "react-parallax-tilt";
 import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { sampleDramas } from "../data/sampleDramas";
+import Carousel from "../components/carousel";
 
 const genres = ["All", "Romance", "Thriller", "Comedy", "Fantasy", "Action"];
 const trendingDramas = sampleDramas || [];
@@ -95,6 +96,9 @@ function DramaCarousel({ title, dramas }) {
       {" "}
       <h2 className="text-2xl font-heading mb-4">{title}</h2>
       <div className="relative">
+        <div className="app-container">
+          <Carousel />
+        </div>
         <motion.button
           onClick={() => scroll("left")}
           className="glass glass-hover absolute -left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
