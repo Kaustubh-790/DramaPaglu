@@ -93,3 +93,29 @@ export const getDramaById = asyncHandler(async (req, res) => {
     throw new Error("Drama not found");
   }
 });
+
+export const getTopDramas = asyncHandler(async (req, res) => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.PYTHON_MICROSERVICE_URL}/top-dramas`
+    );
+    res.json(data);
+  } catch (error) {
+    console.error("Python top-dramas service error:", error.message);
+    res.status(500);
+    throw new Error("Failed to fetch top dramas from external service.");
+  }
+});
+
+export const getNewReleases = asyncHandler(async (req, res) => {
+  try {
+    const { data } = await axios.get(
+      `${process.env.PYTHON_MICROSERVICE_URL}/new-releases`
+    );
+    res.json(data);
+  } catch (error) {
+    console.error("Python new-releases service error:", error.message);
+    res.status(500);
+    throw new Error("Failed to fetch new releases from external service.");
+  }
+});
