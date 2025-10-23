@@ -2,13 +2,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, ChevronDown, Heart, Trash2 } from "lucide-react";
 
-// Sample dramas data
 const sampleDramas = [
   {
     id: 1,
     title: "Vincenzo",
-    poster:
-      "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&h=750&fit=crop",
+    poster: "/Vincenzo.webp",
     genres: ["Thriller", "Comedy"],
     year: 2021,
     status: "Completed",
@@ -17,8 +15,7 @@ const sampleDramas = [
   {
     id: 2,
     title: "Queen of Tears",
-    poster:
-      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=500&h=750&fit=crop",
+    poster: "/QOT.webp",
     genres: ["Romance", "Drama"],
     year: 2024,
     status: "Watching",
@@ -36,7 +33,6 @@ const genres = [
   "Drama",
 ];
 
-// Drama Card Component
 function DramaCard({ drama, onToggleFavorite, onToggleStatus, onDelete }) {
   return (
     <motion.div whileHover={{ scale: 1.05, y: -10 }} className="relative group">
@@ -47,7 +43,6 @@ function DramaCard({ drama, onToggleFavorite, onToggleStatus, onDelete }) {
           className="w-full h-80 object-cover"
         />
 
-        {/* Overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
             <h3 className="text-white font-bold text-lg">{drama.title}</h3>
@@ -86,7 +81,6 @@ function DramaCard({ drama, onToggleFavorite, onToggleStatus, onDelete }) {
           </div>
         </div>
 
-        {/* Favorite badge */}
         {drama.favorite && (
           <div className="absolute top-3 right-3 bg-pink-500 p-2 rounded-full shadow-lg">
             <Heart className="w-4 h-4 text-white fill-current" />

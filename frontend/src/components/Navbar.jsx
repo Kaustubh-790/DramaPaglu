@@ -21,8 +21,7 @@ export default function Navbar() {
             to="/"
             className="text-2xl font-heading font-bold text-primary-accent whitespace-nowrap"
           >
-            <Heart className="inline w-6 h-6 mr-1 -mt-1" />
-            Drama Paglu
+            <img src="/logo.svg" className="h-10 w-10" />
           </Link>
         </div>
         <div className="flex items-center gap-8 justify-center flex-1">
