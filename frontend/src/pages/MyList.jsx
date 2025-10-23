@@ -1,5 +1,5 @@
 import { sampleDramas } from "../data/sampleDramas";
-import AccordionCard from "../components/AccordionCard";
+import AccordionCard from "../components/Accordion";
 import { motion } from "framer-motion";
 
 export default function MyList() {

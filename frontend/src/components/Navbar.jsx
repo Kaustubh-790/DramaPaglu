@@ -8,32 +8,40 @@ export default function Navbar() {
     { to: "/", label: "Home" },
     { to: "/mylist", label: "My List" },
     { to: "/discover", label: "Discover" },
-    { to: "/profile", label: "Profile" },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 w-full bg-neutral-900/80 backdrop-blur-md border-b border-neutral-800 z-50">
-      <div className="flex items-center justify-between px-6 py-3">
-        <Link to="/" className="text-xl font-bold text-accent-pink">
+    <nav className="fixed top-6 left-0 w-full z-50 container-padding">
+      <div className="glass flex items-center justify-between max-w-5xl mx-auto rounded-2xl px-8 py-4 shadow-lg">
+        <Link
+          to="/"
+          className="text-2xl font-heading font-bold text-primary-accent"
+        >
           DramaLog
         </Link>
-        <div className="flex items-center gap-6">
+
+        <div className="hidden md:flex items-center gap-8">
           {links.map((l) => (
-            <Link key={l.to} to={l.to} className="relative">
+            <Link
+              key={l.to}
+              to={l.to}
+              className="relative text-secondary-text hover:text-foreground transition-colors py-1"
+            >
               {pathname === l.to && (
                 <motion.div
                   layoutId="underline"
-                  className="absolute -bottom-1 left-0 right-0 h-[2px] bg-accent-pink"
+                  className="absolute -bottom-1 left-0 right-0 h-[3px] bg-primary-accent rounded-full"
                 />
               )}
-              <span>{l.label}</span>
+              <span className="font-medium text-base">{l.label}</span>
             </Link>
           ))}
         </div>
-        <div className="flex items-center gap-3">
-          <Search className="w-5 h-5" />
-          <Heart className="w-5 h-5" />
-          <User className="w-5 h-5" />
+
+        <div className="flex items-center gap-5">
+          <Search className="w-5 h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer" />
+          <Heart className="w-5 h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer" />
+          <User className="w-5 h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer" />
         </div>
       </div>
     </nav>

@@ -4,10 +4,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        accent: {
-          pink: "#ff4b6e",
-          teal: "#0fffc4",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        "secondary-text": "var(--secondary-text)",
+        "primary-accent": "var(--primary-accent)",
+        "secondary-accent": "var(--secondary-accent)",
+        "tertiary-accent": "var(--tertiary-accent)",
+        "glass-surface": "var(--glass-surface)",
+        "glass-border": "var(--glass-border)",
+      },
+
+      keyframes: {
+        kenBurns: {
+          "0%": { transform: "scale(1) translate(0, 0)", opacity: 0.8 },
+          "100%": { transform: "scale(1.1) translate(-2%, 0)", opacity: 1 },
         },
+      },
+
+      animation: {
+        kenBurns: "kenBurns 20s infinite alternate ease-in-out",
+      },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        heading: ["Poppins", "sans-serif"],
       },
     },
   },
