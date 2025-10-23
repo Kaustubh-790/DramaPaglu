@@ -1,6 +1,215 @@
 @import "tailwindcss";
 
-html,
+:root {
+  --background: #151515;
+  --foreground: #ece1d6;
+  --secondary-text: #b2b2b2;
+  --primary-accent: #c2442a;
+  --secondary-accent: #4b5b39;
+  --tertiary-accent: #c4a384;
+  --glass-surface: rgba(101, 101, 101, 0.1);
+  --glass-border: rgba(236, 225, 214, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  @apply bg-neutral-950 text-white font-sans;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", sans-serif;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.glass {
+  background: var(--glass-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-hover:hover {
+  background: rgba(101, 101, 101, 0.15);
+  border-color: rgba(236, 225, 214, 0.3);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(101, 101, 101, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(236, 225, 214, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 225, 214, 0.3);
+}
+
+.page.accordion-3-page {
+  background: #141415;
+}
+
+.page.accordion-3-page .bg {
+  background-size: cover;
+  position: fixed;
+  width: 100vh;
+  min-width: 100vh;
+  max-width: 100vh;
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  top: 0;
+  left: 0;
+  filter: grayscale(5);
+  transition: background 0.5s;
+}
+
+.page.accordion-3-page .bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 80%);
+  backdrop-filter: blur(16px);
+}
+
+.accordion-3-item:hover {
+  opacity: 0.5;
+}
+
+.accordion-3 :is(h2, p) {
+  margin: 0;
+}
+
+.accordion-3 {
+  display: flex;
+  gap: 12px;
+}
+
+.accordion-3-item {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  width: 64px;
+  height: 500px;
+  border-radius: 36px;
+  display: flex;
+  align-items: flex-end;
+  opacity: 0.25;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.accordion-3-item h2 {
+  font-size: 24px;
+  font-weight: 400;
+  color: rgb(255 255 255 / 96%);
+}
+
+.accordion-3-item p {
+  color: rgb(255 255 255 / 66%);
+}
+
+.accordion-3-item.active {
+  width: 400px;
+  opacity: 1;
+}
+
+.accordion-3-item .material-symbols-outlined.icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  background: rgb(255 255 255 / 20%);
+  border-radius: 50%;
+  font-size: 28px;
+}
+
+.accordion-3-item .content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 400px;
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  padding: 100px 0 20px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0%), rgb(0 0 0 / 80%));
+  transition: 0.25s;
+}
+
+.accordion-3-item.active .content {
+  opacity: 1;
+  visibility: visible;
+}
+
+.accordion-3-item img {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  height: 150%;
+  filter: grayscale(0.5);
 }
