@@ -32,7 +32,6 @@ export default function Home() {
       <HeroSection />
 
       <div className="px-4 md:px-10 space-y-10 pb-20">
-        <GenreFilters />
         <DramaCarousel title="Trending Now" dramas={trendingDramas} />
         <DramaCarousel title="New Releases" dramas={newReleases} />
       </div>
@@ -74,29 +73,6 @@ function HeroSection() {
           a button
         </motion.button>
       </motion.div>
-    </div>
-  );
-}
-
-function GenreFilters() {
-  const [activeGenre, setActiveGenre] = useState("All");
-
-  return (
-    <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
-      {genres.map((genre) => (
-        <motion.button
-          key={genre}
-          onClick={() => setActiveGenre(genre)}
-          className={`glass-hover glass shrink-0 px-5 py-2 rounded-full font-medium transition-colors ${
-            activeGenre === genre
-              ? "bg-tertiary-accent/80 text-background border-tertiary-accent"
-              : "text-secondary-text"
-          }`}
-          whileTap={{ scale: 0.95 }}
-        >
-          {genre}
-        </motion.button>
-      ))}
     </div>
   );
 }
