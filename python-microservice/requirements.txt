@@ -1,0 +1,6 @@
+Flask>=2.0
+requests>=2.20
+python-dotenv>=0.15
+ddgs>=5.0
+google-generativeai>=0.4
+google-api-python-client>=2.0
