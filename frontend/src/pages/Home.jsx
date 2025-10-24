@@ -14,18 +14,6 @@ import { useAuth } from "../context/AuthContext";
 
 const genres = ["Romance", "Thriller", "Comedy", "Fantasy", "Action"];
 
-const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 },
-};
-
-const pageTransition = {
-  type: "tween",
-  ease: "anticipate",
-  duration: 0.5,
-};
-
 const recommendationCarouselVariants = {
   hidden: { opacity: 0, y: 10 },
   visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.05 } },
@@ -50,6 +38,9 @@ export default function Home() {
   const [isAddingToList, setIsAddingToList] = useState(false);
 
   const fetchRecommendations = async (forceRefresh = false) => {
+    console.log(
+      `Fetching recs for ${selectedGenre}. Force refresh: ${forceRefresh}. User: ${currentUser?.uid}`
+    );
     setLoadingRecs(true);
     setRecError(null);
     setRecommendations([]);
@@ -62,7 +53,9 @@ export default function Home() {
         endpoint += "?refresh=true";
       }
 
+      console.log(`Calling API endpoint: ${endpoint}`);
       const { data } = await api.get(endpoint);
+      console.log("API Response:", data);
 
       const formattedRecs = (data.recommendations || []).map((rec) => ({
         id: rec._id || rec.title,
@@ -77,6 +70,7 @@ export default function Home() {
         listId: null,
       }));
 
+      console.log("Formatted Recs:", formattedRecs);
       setRecommendations(formattedRecs);
     } catch (error) {
       console.error("Failed to fetch recommendations:", error);
@@ -86,6 +80,7 @@ export default function Home() {
           "Could not load recommendations."
       );
     } finally {
+      console.log("Setting loadingRecs to false");
       setLoadingRecs(false);
     }
   };
@@ -215,15 +210,7 @@ export default function Home() {
   };
 
   return (
-    <motion.div
-      initial="initial"
-      animate="in"
-      exit="out"
-      variants={pageVariants}
-      transition={pageTransition}
-      className="overflow-x-hidden relative z-0"
-    >
-      <FixedHeroBackground />
+    <div className="overflow-x-hidden relative z-0">
       <HeroSection />
 
       <div className="px-4 md:px-10 space-y-16 pb-20">
@@ -309,34 +296,13 @@ export default function Home() {
         onSetStatus={handleSetStatusForRec}
         isProcessing={isAddingToList}
       />
-    </motion.div>
-  );
-}
-
-function FixedHeroBackground() {
-  return (
-    <div className="fixed inset-0 -z-10">
-      <motion.img
-        src="/hero.png"
-        alt="Hero Background"
-        className="w-full h-full object-cover"
-        initial={{ scale: 1, opacity: 0.8 }}
-        animate={{ scale: 1.05, opacity: 1 }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-background via-background/70 to-transparent"></div>
     </div>
   );
 }
 
 function HeroSection() {
   return (
-    <div className="relative h-[80vh] md:h-screen w-full flex items-center justify-center md:justify-end">
+    <div className="relative h-[80vh] md:h-screen w-full flex items-center justify-center md:justify-end mb-10 md:mb-0">
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -361,19 +327,21 @@ function DramaCarouselHorizontal({ dramas, onCardClick }) {
   }
 
   return (
-    <div className="relative pt-20">
+    <div className="relative">
       <motion.div
-        className="flex flex-wrap gap-4 justify-center pb-4"
+        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
         variants={recommendationCarouselVariants}
         initial="hidden"
         animate="visible"
+        style={{ scrollSnapType: "x mandatory" }}
       >
         {dramas.map((drama) => (
           <motion.div
-            key={drama.title}
+            key={drama.title || drama.id}
             variants={cardVariants}
-            className="w-48 shrink-0 cursor-pointer"
+            className="w-40 sm:w-48 md:w-52 shrink-0 cursor-pointer"
             onClick={() => onCardClick(drama)}
+            style={{ scrollSnapAlign: "start" }}
           >
             <DramaCard drama={drama} />
           </motion.div>

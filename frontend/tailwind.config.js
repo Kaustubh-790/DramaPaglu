@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
@@ -20,7 +21,6 @@ export default {
           "100%": { transform: "scale(1.1) translate(-2%, 0)", opacity: 1 },
         },
       },
-
       animation: {
         kenBurns: "kenBurns 20s infinite alternate ease-in-out",
       },

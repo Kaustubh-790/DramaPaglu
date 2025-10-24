@@ -187,8 +187,6 @@ export default function MyList() {
   return (
     <>
       <div className="min-h-screen w-full relative pt-28 md:pt-32 pb-20">
-        <FixedBackground />
-
         <div className="relative z-10 px-6 space-y-10">
           <section className="max-w-2xl mx-auto pt-0">
             <form onSubmit={handleAddDrama} className="flex gap-4">
@@ -372,26 +370,5 @@ export default function MyList() {
         onDelete={handleDeleteDramaInModal}
       />
     </>
-  );
-}
-
-function FixedBackground() {
-  return (
-    <div className="fixed inset-0 -z-10">
-      <motion.img
-        src="/myList.png"
-        alt="Hero Background"
-        className="w-full h-full object-cover"
-        initial={{ scale: 1, opacity: 0.8 }}
-        animate={{ scale: 1.05, opacity: 1 }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-background via-background/70 to-transparent"></div>
-    </div>
   );
 }

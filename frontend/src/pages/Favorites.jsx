@@ -49,8 +49,6 @@ export default function Favorites() {
 
   return (
     <div className="min-h-screen w-full relative pt-28 md:pt-32 flex flex-col">
-      <FixedBackground />
-
       <div className="relative z-10 px-4 md:px-10 pb-10 space-y-8 flex-grow flex flex-col">
         <h1 className="text-3xl md:text-4xl font-heading text-center text-white mb-6 md:mb-8 flex-shrink-0">
           My Favorites
@@ -129,27 +127,6 @@ export default function Favorites() {
           )}
         </section>
       </div>
-    </div>
-  );
-}
-
-function FixedBackground() {
-  return (
-    <div className="fixed inset-0 -z-10">
-      <motion.img
-        src="/fav.png"
-        alt="Hero Background"
-        className="w-full h-full object-cover"
-        initial={{ scale: 1, opacity: 0.8 }}
-        animate={{ scale: 1.05, opacity: 1 }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-background via-background/70 to-transparent"></div>
     </div>
   );
 }

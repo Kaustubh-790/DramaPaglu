@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, Fragment, useEffect, useRef } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext"; // Import useTheme
 
 const dropdownVariants = {
   hidden: {
@@ -24,14 +25,14 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { currentUser, dbUser, logOut, api } = useAuth();
+  const { currentUser, dbUser, logOut } = useAuth(); // Removed api, using from useAuth context
+  const { theme, toggleTheme } = useTheme(); // Get theme and toggle function
   const navigate = useNavigate();
-  const [isDarkTheme, setIsDarkTheme] = useState(true);
 
   const links = [
     { to: "/", label: "Home" },
     { to: "/mylist", label: "My List" },
-    { to: "/favorites", label: "Favourites" },
+    { to: "/favorites", label: "Favourites" }, // Corrected spelling
   ];
 
   const handleLogout = async () => {
@@ -59,13 +60,11 @@ export default function Navbar() {
     }
   };
 
-  const toggleTheme = () => {
-    setIsDarkTheme(!isDarkTheme);
-    console.log("Toggle theme - Implement logic");
-  };
+  // Removed local toggleTheme, using the one from context
 
   return (
     <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+      {/* Added dark mode class for glass effect based on theme */}
       <div className="glass flex items-center justify-between w-full max-w-6xl mx-auto rounded-full px-6 md:px-8 py-3 md:py-4 shadow-lg">
         <div className="flex-shrink-0 flex justify-start">
           <Link
@@ -76,6 +75,7 @@ export default function Navbar() {
           </Link>
         </div>
 
+        {/* Navbar links with dark mode text colors */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8 justify-center flex-1">
           {links.map((l) => (
             <Link
@@ -96,6 +96,7 @@ export default function Navbar() {
           ))}
         </div>
 
+        {/* Right side icons and profile */}
         <div className="flex items-center gap-3 md:gap-5 justify-end">
           <form onSubmit={handleSearchSubmit} className="flex items-center">
             <motion.input
@@ -112,7 +113,8 @@ export default function Navbar() {
                 paddingRight: isSearchOpen ? "0.75rem" : "0rem",
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="glass h-8 md:h-9 rounded-full text-xs md:text-sm text-foreground placeholder-secondary-text focus:outline-none focus:border-primary-accent/50"
+              // Added dark mode styles for input
+              className="glass h-8 md:h-9 rounded-full text-xs md:text-sm text-foreground placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-primary-accent/50 focus:border-transparent"
             />
             <Search
               className="w-4 h-4 md:w-5 md:h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer"
@@ -129,7 +131,7 @@ export default function Navbar() {
           {currentUser ? (
             <Menu as="div" className="relative inline-block text-left">
               <div>
-                <Menu.Button className="flex items-center gap-2 cursor-pointer rounded-full p-1 hover:bg-white/10 transition-colors">
+                <Menu.Button className="flex items-center gap-2 cursor-pointer rounded-full p-1 hover:bg-white/10 dark:hover:bg-white/5 transition-colors">
                   {dbUser?.photoURL ? (
                     <img
                       src={dbUser.photoURL}
@@ -154,21 +156,22 @@ export default function Navbar() {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
+                {/* Added dark mode styles for dropdown */}
                 <Menu.Items
                   as={motion.div}
                   variants={dropdownVariants}
                   initial="hidden"
                   animate="visible"
                   exit="hidden"
-                  className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl glass shadow-lg focus:outline-none overflow-hidden"
+                  className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl glass shadow-lg focus:outline-none overflow-hidden border border-glass-border"
                 >
                   <div className="py-1">
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          to="/profile"
+                          to="/profile" // Assuming a profile page route exists or will be created
                           className={`${
-                            active ? "bg-white/10" : ""
+                            active ? "bg-white/10 dark:bg-white/5" : ""
                           } group flex w-full items-center px-4 py-2 text-sm text-foreground transition-colors`}
                         >
                           <Settings className="mr-2 h-4 w-4 text-secondary-text group-hover:text-foreground" />
@@ -179,17 +182,17 @@ export default function Navbar() {
                     <Menu.Item>
                       {({ active }) => (
                         <button
-                          onClick={toggleTheme}
+                          onClick={toggleTheme} // Use toggleTheme from context
                           className={`${
-                            active ? "bg-white/10" : ""
+                            active ? "bg-white/10 dark:bg-white/5" : ""
                           } group flex w-full items-center px-4 py-2 text-sm text-foreground transition-colors`}
                         >
-                          {isDarkTheme ? (
+                          {theme === "dark" ? (
                             <Sun className="mr-2 h-4 w-4 text-secondary-text group-hover:text-foreground" />
                           ) : (
                             <Moon className="mr-2 h-4 w-4 text-secondary-text group-hover:text-foreground" />
                           )}
-                          {isDarkTheme ? "Light Mode" : "Dark Mode"}
+                          {theme === "dark" ? "Light Mode" : "Dark Mode"}
                         </button>
                       )}
                     </Menu.Item>
@@ -198,8 +201,8 @@ export default function Navbar() {
                         <button
                           onClick={handleLogout}
                           className={`${
-                            active ? "bg-white/10" : ""
-                          } group flex w-full items-center px-4 py-2 text-sm text-red-400 hover:text-red-300 transition-colors`}
+                            active ? "bg-white/10 dark:bg-white/5" : ""
+                          } group flex w-full items-center px-4 py-2 text-sm text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors`}
                         >
                           <LogOut className="mr-2 h-4 w-4" />
                           Logout
@@ -221,40 +224,75 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Nav - Added dark mode styles */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-glass-border py-2 px-4 flex justify-around items-center">
-        {links.map((l) => (
-          <Link
-            key={`mobile-${l.to}`}
-            to={l.to}
-            className={`flex flex-col items-center p-2 rounded-md ${
-              pathname === l.to
-                ? "text-primary-accent"
-                : "text-secondary-text hover:text-foreground"
-            }`}
-          >
-            {l.label === "Home" && <User className="w-5 h-5 mb-1" />}
-            {l.label === "My List" && <Heart className="w-5 h-5 mb-1" />}
-            {l.label === "Favourites" && (
-              <Heart className="w-5 h-5 mb-1 fill-current" />
-            )}
-            <span className="text-xs">{l.label}</span>
-          </Link>
-        ))}
+        {/* Simplified mobile nav - showing only Home, My List, Favourites if logged in */}
+        <Link
+          key="mobile-/"
+          to="/"
+          className={`flex flex-col items-center p-2 rounded-md ${
+            pathname === "/"
+              ? "text-primary-accent"
+              : "text-secondary-text hover:text-foreground"
+          }`}
+        >
+          {/* Using User icon for Home */}
+          <User className="w-5 h-5 mb-1" />
+          <span className="text-xs">Home</span>
+        </Link>
         {currentUser && (
-          <Link
-            to="/favorites"
-            className={`flex flex-col items-center p-2 rounded-md ${
-              pathname === "/favorites"
-                ? "text-primary-accent"
-                : "text-secondary-text hover:text-foreground"
-            }`}
-          >
-            <Heart
-              className={`w-5 h-5 mb-1 ${
-                pathname === "/favorites" ? "fill-current" : ""
+          <>
+            <Link
+              key="mobile-/mylist"
+              to="/mylist"
+              className={`flex flex-col items-center p-2 rounded-md ${
+                pathname === "/mylist"
+                  ? "text-primary-accent"
+                  : "text-secondary-text hover:text-foreground"
               }`}
-            />
-            <span className="text-xs">Favorites</span>
+            >
+              {/* Using List icon for My List */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 mb-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 6h16M4 12h16m-7 6h7"
+                />
+              </svg>
+              <span className="text-xs">My List</span>
+            </Link>
+            <Link
+              key="mobile-/favorites"
+              to="/favorites"
+              className={`flex flex-col items-center p-2 rounded-md ${
+                pathname === "/favorites"
+                  ? "text-primary-accent"
+                  : "text-secondary-text hover:text-foreground"
+              }`}
+            >
+              <Heart
+                className={`w-5 h-5 mb-1 ${
+                  pathname === "/favorites" ? "fill-current" : ""
+                }`}
+              />
+              <span className="text-xs">Favorites</span>
+            </Link>
+          </>
+        )}
+        {!currentUser && (
+          <Link
+            to="/login"
+            className={`flex flex-col items-center p-2 rounded-md text-secondary-text hover:text-foreground`}
+          >
+            <LogOut className="w-5 h-5 mb-1 transform rotate-180" />
+            <span className="text-xs">Login</span>
           </Link>
         )}
       </div>

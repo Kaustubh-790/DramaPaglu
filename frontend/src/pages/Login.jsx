@@ -65,7 +65,6 @@ export default function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] pt-40 mb-10">
-      <FixedBackground />
       <div className="glass w-full max-w-md p-8 rounded-2xl shadow-xl">
         <h2 className="text-3xl font-heading text-center mb-6">Login</h2>
 
@@ -128,27 +127,6 @@ export default function Login() {
           </Link>
         </p>
       </div>
-    </div>
-  );
-}
-
-function FixedBackground() {
-  return (
-    <div className="fixed inset-0 -z-10">
-      <motion.img
-        src="/login-signup.png"
-        alt="Login/Signup Background"
-        className="w-full h-full object-cover"
-        initial={{ scale: 1, opacity: 0.8 }}
-        animate={{ scale: 1.05, opacity: 1 }}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-background via-background/70 to-transparent"></div>
     </div>
   );
 }
