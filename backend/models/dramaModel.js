@@ -26,7 +26,7 @@ const dramaSchema = new mongoose.Schema(
     },
     cast: [String],
     rating: {
-      type: Number,
+      type: String,
     },
     sourceUrl: {
       type: String,
