@@ -19,9 +19,10 @@ export default function Navbar() {
         <div className="flex-shrink-0 flex justify-start">
           <Link
             to="/"
-            className="text-2xl font-heading font-bold text-primary-accent whitespace-nowrap"
+            className="flex items-center gap-3 text-2xl font-heading font-bold text-primary-accent whitespace-nowrap"
           >
-            <img src="/logo.svg" className="h-10 w-10" />
+            {/* <img src="/logo.svg" className="h-10 w-10" alt="Logo" /> */}
+            <span>Drama Paglu</span>
           </Link>
         </div>
         <div className="flex items-center gap-8 justify-center flex-1">
