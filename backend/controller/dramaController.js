@@ -31,13 +31,15 @@ export const addDrama = asyncHandler(async (req, res) => {
         title: scrapedData.title,
         altTitles: scrapedData.altTitles || [],
         year: scrapedData.year,
-        genres: scrapedData.genres,
+        country: scrapedData.country || "South Korea",
+        genres: scrapedData.genres || [],
         posterUrl: scrapedData.posterUrl,
         description: scrapedData.description,
-        cast: scrapedData.cast,
+        cast: scrapedData.cast || [],
         rating: scrapedData.rating,
         sourceUrl: scrapedData.sourceUrl,
-        status: scrapedData.status,
+        type: scrapedData.type || "drama",
+        status: scrapedData.status || "completed",
       });
       await drama.save();
     } catch (error) {
@@ -69,6 +71,7 @@ export const addDrama = asyncHandler(async (req, res) => {
 
   res.status(201).json({
     id: addedItem.dramaId._id,
+    listId: addedItem._id,
     title: addedItem.dramaId.title,
     poster: addedItem.dramaId.posterUrl,
     genres: addedItem.dramaId.genres,

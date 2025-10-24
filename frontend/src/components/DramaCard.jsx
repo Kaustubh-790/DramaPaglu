@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { Heart, Eye, Check, Trash2 } from "lucide-react";
 
-// This new component is modeled after your TiltableGlassCard for visual consistency
 export default function DramaCard({
   drama,
   onToggleFavorite,
@@ -9,54 +8,68 @@ export default function DramaCard({
   onDelete,
 }) {
   const getStatusBadge = () => {
-    if (drama.status === "Completed") {
+    if (drama.status === "completed") {
       return (
         <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md text-xs font-bold bg-secondary-accent/90 text-foreground">
-          {drama.status}
+          Completed
         </div>
       );
     }
-    if (drama.status === "Watching") {
+    if (drama.status === "watching") {
       return (
         <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md text-xs font-bold bg-tertiary-accent/90 text-background">
-          {drama.status}
+          Watching
         </div>
       );
     }
-    // "Want to Watch" or other statuses won't show a badge
+    if (drama.status === "planned") {
+      return (
+        <div className="absolute top-3 left-3 px-2 py-0.5 rounded-md text-xs font-bold bg-primary-accent/90 text-white">
+          Planned
+        </div>
+      );
+    }
     return null;
+  };
+
+  const getNextStatus = () => {
+    if (drama.status === "planned") return "watching";
+    if (drama.status === "watching") return "completed";
+    return "planned";
+  };
+
+  const getStatusIcon = () => {
+    if (drama.status === "watching") {
+      return <Check className="w-5 h-5 text-tertiary-accent" />;
+    }
+    return <Eye className="w-5 h-5 text-foreground" />;
+  };
+
+  const getStatusTooltip = () => {
+    if (drama.status === "planned") return "Mark as Watching";
+    if (drama.status === "watching") return "Mark as Completed";
+    return "Mark as Planned";
   };
 
   return (
     <motion.div className="glass rounded-2xl w-full h-auto aspect-[2/3] shrink-0 relative overflow-hidden group">
-      {/* Poster Image */}
       <img
         src={drama.poster}
         alt={drama.title}
         className="w-full h-full object-cover absolute inset-0 z-0"
       />
 
-      {/* Status Badge */}
       {getStatusBadge()}
 
-      {/* Quick Actions - Appear on Hover */}
       <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={onToggleStatus}
           className="glass glass-hover w-9 h-9 rounded-full flex items-center justify-center"
-          title={
-            drama.status === "Watching"
-              ? "Mark as Completed"
-              : "Mark as Watching"
-          }
+          title={getStatusTooltip()}
         >
-          {drama.status === "Watching" ? (
-            <Check className="w-5 h-5 text-tertiary-accent" />
-          ) : (
-            <Eye className="w-5 h-5 text-foreground" />
-          )}
+          {getStatusIcon()}
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.1 }}
@@ -76,7 +89,7 @@ export default function DramaCard({
               {drama.title}
             </h4>
             <p className="text-xs text-secondary-text">
-              {drama.year} • {drama.genres[0]}
+              {drama.year} • {drama.genres?.[0] || "Drama"}
             </p>
           </div>
           <Heart

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Listbox } from "@headlessui/react";
 import DramaCard from "../components/DramaCard";
-import { Plus, ChevronDown, Check } from "lucide-react";
+import { Plus, ChevronDown, Check, Loader } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const genres = [
@@ -21,6 +21,7 @@ export default function MyList() {
   const [error, setError] = useState(null);
   const [newDramaTitle, setNewDramaTitle] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("All");
+  const [addingDrama, setAddingDrama] = useState(false);
   const { api } = useAuth();
 
   useEffect(() => {
@@ -45,6 +46,9 @@ export default function MyList() {
     if (!newDramaTitle.trim()) return;
 
     try {
+      setAddingDrama(true);
+      setError(null);
+
       const { data: newDrama } = await api.post("/dramas/add", {
         title: newDramaTitle,
       });
@@ -54,12 +58,14 @@ export default function MyList() {
     } catch (err) {
       console.error("Failed to add drama:", err);
       setError(err.response?.data?.message || err.message);
+    } finally {
+      setAddingDrama(false);
     }
   };
 
   const handleToggleFavorite = async (id, currentFavorite) => {
     try {
-      const { data: updatedDrama } = await api.patch(`/userlist/update/${id}`, {
+      const { data: updatedDrama } = await api.patch(`/userlist/${id}`, {
         dramaId: id,
         favorite: !currentFavorite,
       });
@@ -73,9 +79,9 @@ export default function MyList() {
   };
 
   const handleToggleStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === "Watching" ? "completed" : "watching";
+    const newStatus = currentStatus === "watching" ? "completed" : "watching";
     try {
-      const { data: updatedDrama } = await api.patch(`/userlist/update/${id}`, {
+      const { data: updatedDrama } = await api.patch(`/userlist/${id}`, {
         dramaId: id,
         status: newStatus,
       });
@@ -101,7 +107,7 @@ export default function MyList() {
   const filteredDramas =
     selectedGenre === "All"
       ? dramas
-      : dramas.filter((d) => d.genres.includes(selectedGenre));
+      : dramas.filter((d) => d.genres?.includes(selectedGenre));
 
   return (
     <div className="min-h-screen w-full relative pt-20">
@@ -121,18 +127,29 @@ export default function MyList() {
               type="text"
               value={newDramaTitle}
               onChange={(e) => setNewDramaTitle(e.target.value)}
-              placeholder="Add a new drama by title"
+              placeholder="Add a new drama by title (e.g., Vincenzo, Squid Game)"
               className="flex-grow bg-white/20 backdrop-blur-md border border-white/30 px-6 py-4 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-pink-400/50 shadow-lg"
+              disabled={addingDrama}
             />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               type="submit"
-              className="bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 px-6 py-4 rounded-2xl text-white font-bold shadow-lg transition"
+              disabled={addingDrama}
+              className="bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 px-6 py-4 rounded-2xl text-white font-bold shadow-lg transition disabled:opacity-50"
             >
-              <Plus className="w-6 h-6" />
+              {addingDrama ? (
+                <Loader className="w-6 h-6 animate-spin" />
+              ) : (
+                <Plus className="w-6 h-6" />
+              )}
             </motion.button>
           </form>
+          {addingDrama && (
+            <p className="text-center text-white/80 mt-3 text-sm">
+              Fetching drama details...
+            </p>
+          )}
         </section>
 
         <section className="flex justify-center">
@@ -154,7 +171,7 @@ export default function MyList() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2, ease: "easeInOut" }}
-                  className="absolute mt-2 max-h-60 w-full overflow-auto rounded-2xl bg-white/20 backdrop-blur-lg border border-white/30 py-2 text-base shadow-lg  ring-opacity-5 focus:outline-none sm:text-sm z-50"
+                  className="absolute mt-2 max-h-60 w-full overflow-auto rounded-2xl bg-white/20 backdrop-blur-lg border border-white/30 py-2 text-base shadow-lg ring-opacity-5 focus:outline-none sm:text-sm z-50"
                 >
                   {genres.map((genre) => (
                     <Listbox.Option
@@ -191,7 +208,7 @@ export default function MyList() {
         </section>
 
         {error && (
-          <div className="text-center bg-red-500/60 text-white-300 p-3 rounded-lg max-w-lg mx-auto">
+          <div className="text-center bg-red-500/60 text-white p-3 rounded-lg max-w-lg mx-auto">
             {error}
           </div>
         )}
@@ -201,7 +218,7 @@ export default function MyList() {
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
         >
           {loading ? (
-            <p className="text-secondary-text col-span-full text-center">
+            <p className="text-white col-span-full text-center">
               Loading your list...
             </p>
           ) : filteredDramas.length > 0 ? (
@@ -227,7 +244,7 @@ export default function MyList() {
               </motion.div>
             ))
           ) : (
-            <p className="text-secondary-text col-span-full text-center bg-white/20 backdrop-blur-md border border-white/30 appearance-none py-4 rounded-2xl text-white font-medium  pr-12 shadow-lg">
+            <p className="text-white col-span-full text-center bg-white/20 backdrop-blur-md border border-white/30 py-4 rounded-2xl font-medium shadow-lg">
               Your list is empty. Add a drama to get started!
             </p>
           )}

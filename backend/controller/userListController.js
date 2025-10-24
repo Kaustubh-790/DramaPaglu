@@ -35,8 +35,7 @@ export const getMyList = asyncHandler(async (req, res) => {
 
 export const updateListItem = asyncHandler(async (req, res) => {
   const userId = req.user.uid;
-
-  const { dramaId } = req.body;
+  const dramaId = req.params.id;
   const { status, favorite } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(dramaId)) {
