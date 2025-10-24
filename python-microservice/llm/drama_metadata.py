@@ -2,6 +2,7 @@ import os
 import google.generativeai as genai
 import json
 from dotenv import load_dotenv
+import datetime
 
 load_dotenv()
 
@@ -43,20 +44,33 @@ def get_llm_drama_details(title):
 
     model = genai.GenerativeModel('gemini-2.5-flash') 
 
+    current_year = datetime.datetime.now().year
+
     prompt = f"""
-    Please provide information about the K-drama (or movie if applicable) titled "{title}".
-    Format the response strictly as a JSON object matching the following structure.
-    Do NOT include the posterUrl, leave it as an empty string "".
-    If a field is not applicable or cannot be found, use null or an empty list [] as appropriate according to the structure.
+    You are a precise K-drama information extractor.
+
+    Task:
+    Return verified metadata for the Korean drama or movie titled "{title}".
+    If multiple exist, choose the most recent (prioritize releases from {current_year}; if unavailable, include the most notable version from the past 5 years).
+
+    Rules:
+    - Use verified and recent information (cross-check MyDramaList, TMDB, or official Korean sources).
+    - If data cannot be found, return null or an empty list [].
+    - Output only a single, valid JSON object—no extra text, no markdown, no explanations.
+    - The JSON must strictly follow the provided structure.
+    - Leave `"posterUrl"` as an empty string "".
+    - Do not include speculative, upcoming, or rumored information unless officially confirmed.
+    - Ensure `year` is the year of first broadcast or film release.
 
     Structure:
     {JSON_STRUCTURE_TEMPLATE}
 
-    Ensure the output is only the JSON object, with no introductory text, explanations, or markdown formatting like ```json ```.
+    Return ONLY the JSON object below, nothing else.
     """
 
     try:
         print(f"Sending prompt to Gemini for title: {title}")
+        print(f"Prompt:\n{prompt}\n")
         response = model.generate_content(prompt)
 
         cleaned_response = response.text.strip().lstrip('```json').rstrip('```').strip()
