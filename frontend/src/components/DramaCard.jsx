@@ -1,4 +1,52 @@
 import { motion } from "framer-motion";
+import { ListTodo, Eye, Check } from "lucide-react";
+
+// New StatusBadge component using lucide-react icons
+const StatusBadge = ({ status }) => {
+  const getStyle = (s) => {
+    switch (s) {
+      case "completed":
+        // Green Check icon for 'Completed'
+        return {
+          icon: <Check className="w-5 h-5" />,
+          className: "bg-green-600/50 text-white",
+        };
+      case "watching":
+        // Blue Eye icon for 'Watching'
+        return {
+          icon: <Eye className="w-5 h-5" />,
+          className: "bg-blue-600/50 text-white",
+        };
+      case "planned":
+        // Gray ListTodo icon for 'Planned'
+        return {
+          icon: <ListTodo className="w-5 h-5" />,
+          className: "bg-gray-600/50 text-white",
+        };
+      default:
+        return null;
+    }
+  };
+
+  const badgeInfo = getStyle(status);
+
+  if (!badgeInfo) return null;
+
+  return (
+    <div
+      className={`absolute top-3 right-3 p-2 rounded-full shadow-lg backdrop-blur-sm ${badgeInfo.className} flex items-center justify-center`}
+      // Applying a fixed size and the glass effect directly
+      style={{
+        width: "36px",
+        height: "36px",
+        background: `var(--glass-surface)` /* Using CSS variable for glass base */,
+        borderColor: `var(--glass-border)` /* Using CSS variable for border */,
+      }}
+    >
+      {badgeInfo.icon}
+    </div>
+  );
+};
 
 export default function DramaCard({ drama }) {
   return (
@@ -17,6 +65,8 @@ export default function DramaCard({ drama }) {
             "https://via.placeholder.com/500x750.png?text=No+Image";
         }}
       />
+
+      {drama.status && <StatusBadge status={drama.status} />}
 
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 to-transparent z-[5]"></div>
 
