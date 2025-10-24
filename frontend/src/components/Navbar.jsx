@@ -1,17 +1,29 @@
-import { Link, useLocation } from "react-router-dom";
-import { Heart, Search, User } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Heart, Search, User, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const { pathname } = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { currentUser, dbUser, logOut } = useAuth();
+  const navigate = useNavigate();
 
   const links = [
     { to: "/", label: "Home" },
     { to: "/mylist", label: "My List" },
     { to: "/discover", label: "Discover" },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      navigate("/login");
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  };
 
   return (
     <nav className="fixed top-6 left-0 right-0 z-50 rounded-full flex justify-center">
@@ -21,7 +33,6 @@ export default function Navbar() {
             to="/"
             className="flex items-center gap-3 text-2xl font-heading font-bold text-primary-accent whitespace-nowrap"
           >
-            {/* <img src="/logo.svg" className="h-10 w-10" alt="Logo" /> */}
             <span>Drama Paglu</span>
           </Link>
         </div>
@@ -63,8 +74,46 @@ export default function Navbar() {
             />
           </div>
 
-          <Heart className="w-5 h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer" />
-          <User className="w-5 h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer" />
+          {currentUser ? (
+            <>
+              <Link to="/mylist">
+                <Heart className="w-5 h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer" />
+              </Link>
+              <div className="flex items-center gap-2">
+                {dbUser?.photoURL ? (
+                  <img
+                    src={dbUser.photoURL}
+                    alt={dbUser.name}
+                    className="w-7 h-7 rounded-full"
+                  />
+                ) : (
+                  <User className="w-5 h-5 text-secondary-text" />
+                )}
+                <span className="text-sm font-medium hidden md:block">
+                  {dbUser?.name?.split(" ")[0] || "Profile"}
+                </span>
+              </div>
+              <LogOut
+                className="w-5 h-5 text-secondary-text hover:text-primary-accent transition-colors cursor-pointer"
+                onClick={handleLogout}
+              />
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-base font-medium text-secondary-text hover:text-foreground"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="text-base font-medium bg-primary-accent text-white px-4 py-1.5 rounded-full hover:bg-opacity-80 transition-all"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

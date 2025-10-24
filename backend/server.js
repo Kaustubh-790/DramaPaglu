@@ -6,6 +6,7 @@ import dramaRoutes from "./routes/dramaRoutes.js";
 import userListRoutes from "./routes/usersListRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
   res.send("DramaPaglu Backend API is running...");
 });
 
+app.use("/api/users", userRoutes);
 app.use("/api/dramas", dramaRoutes);
 app.use("/api/userlist", userListRoutes);
 app.use("/api/recommendations", recommendationRoutes);
