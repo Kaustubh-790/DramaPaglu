@@ -1,110 +1,98 @@
-// filename: backend/controller/userController.js
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
 
-// --- registerUser (Email/Pass) ---
-// This function is for *new* email/pass signups only.
-// We must check if the email already exists.
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email } = req.body;
-  const { uid } = req.user; // UID from Firebase token
+  const { uid } = req.user;
+  console.log("Registering user:", { uid, email, name });
 
-  // Check if this UID is already in our DB (shouldn't happen, but good check)
-  const userExistsByUID = await User.findById(uid);
-  if (userExistsByUID) {
+  const existingUser = await User.findById(uid);
+  if (existingUser) {
     res.status(400);
-    throw new Error("User already exists in database");
+    throw new Error("User already exists");
   }
 
-  // Check if this EMAIL is already in our DB (e.g., from Google signup)
-  const userExistsByEmail = await User.findOne({ email });
-  if (userExistsByEmail) {
+  const emailExists = await User.findOne({ email });
+  if (emailExists) {
     res.status(400);
-    throw new Error(
-      "An account with this email already exists. Please log in."
-    );
+    throw new Error("Email already in use");
   }
 
-  // Create new user
   const user = await User.create({
-    _id: uid, // Use Firebase UID as the _id
+    _id: uid,
     name,
     email,
   });
 
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-    });
-  } else {
-    res.status(400);
-    throw new Error("Invalid user data");
-  }
+  console.log("User registered:", user._id);
+
+  res.status(201).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    photoURL: user.photoURL || null,
+  });
 });
 
-// --- FIXED googleSignIn ---
-// This function handles "Log in with Google".
-// It finds a user by EMAIL.
-// - If found, it updates their info (name, photo, and *Firebase UID*).
-// - If not found, it creates a new user with all info.
-// This is the correct "upsert" logic for OAuth.
 const googleSignIn = asyncHandler(async (req, res) => {
   const { uid, email, name, picture } = req.user;
 
-  // Find user by EMAIL, not UID
-  const user = await User.findOneAndUpdate(
-    { email: email }, // Query by email
-    {
-      // --- Data to set/update ---
-      $set: {
-        _id: uid, // Update the UID to match the Google Firebase UID
-        name: name,
-        photoURL: picture,
-      },
-      // --- Data to set ONLY on create (insert) ---
-      $setOnInsert: {
-        email: email,
-      },
-    },
-    {
-      upsert: true, // Create if email not found
-      new: true, // Return the (new or updated) document
-      setDefaultsOnInsert: true,
-    }
-  );
+  console.log("Google sign-in attempt:", { uid, email, name });
+
+  let user = await User.findById(uid);
 
   if (user) {
-    res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      photoURL: user.photoURL,
-    });
+    console.log("User found, updating info");
+    user.name = name;
+    user.photoURL = picture || user.photoURL;
+    await user.save();
   } else {
-    res.status(400);
-    throw new Error("Could not sign in with Google");
+    console.log("📝 User not found, creating new account");
+
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+      res.status(400);
+      throw new Error(
+        "This email is already registered with a different account. Please use email/password login."
+      );
+    }
+
+    user = await User.create({
+      _id: uid,
+      email,
+      name,
+      photoURL: picture || "",
+    });
+
+    console.log("New user created:", user._id);
   }
+
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    photoURL: user.photoURL || null,
+  });
 });
 
-// --- getUserProfile ---
-// This is fine as-is. It finds the user by their UID,
-// which is attached to the token by the 'protect' middleware.
 const getUserProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.uid);
+  const { uid } = req.user;
 
-  if (user) {
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      photoURL: user.photoURL,
-    });
-  } else {
+  console.log("Fetching profile for:", uid);
+
+  const user = await User.findById(uid);
+
+  if (!user) {
     res.status(404);
-    throw new Error("User not found in database");
+    throw new Error("User not found");
   }
+
+  res.json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    photoURL: user.photoURL || null,
+  });
 });
 
 export { registerUser, googleSignIn, getUserProfile };
