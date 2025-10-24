@@ -122,3 +122,24 @@ export const getNewReleases = asyncHandler(async (req, res) => {
     throw new Error("Failed to fetch new releases from external service.");
   }
 });
+
+export const searchDramas = asyncHandler(async (req, res) => {
+  const query = req.query.q;
+
+  if (!query) {
+    res.status(400);
+    throw new Error("Search query is required");
+  }
+
+  const dramas = await Drama.find({
+    $or: [
+      { title: { $regex: query, $options: "i" } },
+      { altTitles: { $regex: query, $options: "i" } },
+      { cast: { $regex: query, $options: "i" } },
+    ],
+  })
+    .limit(20)
+    .sort({ year: -1 });
+
+  res.json(dramas);
+});

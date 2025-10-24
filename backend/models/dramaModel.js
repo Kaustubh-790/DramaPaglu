@@ -47,6 +47,7 @@ const dramaSchema = new mongoose.Schema(
 );
 
 dramaSchema.index({ title: "text", altTitles: "text" });
+dramaSchema.index({ cast: 1 });
 
 const Drama = mongoose.model("Drama", dramaSchema);
 

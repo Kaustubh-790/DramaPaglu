@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Favorites from "./pages/Favorites";
+import SearchResults from "./pages/SearchResults";
 
 export default function App() {
   return (
@@ -30,6 +31,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Favorites />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/search-results"
+            element={
+              <ProtectedRoute>
+                <SearchResults />
               </ProtectedRoute>
             }
           />
