@@ -36,7 +36,7 @@ def get_top_dramas_llm():
     with no introductory text, explanations, or markdown formatting like ```json ```.
     """
 
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
     try:
         print("Sending top dramas prompt to Gemini...")
