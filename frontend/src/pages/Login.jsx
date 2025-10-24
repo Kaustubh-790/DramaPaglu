@@ -1,32 +1,39 @@
+// filename: frontend/src/pages/Login.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+// import { FaGoogle } from 'react-icons/fa'; // Icon is handled by img src
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { logIn, LogInWithGoogle } = useAuth();
+  // --- FIX: Correct function names ---
+  const { logIn, logInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setError("");
     try {
-      await Login(email, password);
-      navigate("/");
+      // --- FIX: Use correct function name ---
+      await logIn(email, password);
+      navigate("/mylist"); // Redirect to mylist
     } catch (err) {
-      setError("Failed to log in", err.message);
+      // --- FIX: Show specific error ---
+      setError(err.message);
     }
   };
 
   const handleGoogleLogin = async () => {
     setError("");
     try {
-      await LogInWithGoogle();
-      navigate("/");
+      // --- FIX: Use correct function name ---
+      await logInWithGoogle();
+      navigate("/mylist"); // Redirect to mylist
     } catch (err) {
-      setError("Failed to log in with google", err.message);
+      // --- FIX: Show specific error ---
+      setError(err.message);
     }
   };
 
@@ -43,7 +50,7 @@ export default function Login() {
         <form onSubmit={handleEmailLogin} className="space-y-4">
           <input
             type="email"
-            placeholder="Enter yout email"
+            placeholder="Enter your email" // Corrected typo
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full glass px-4 py-3 rounded-xl focus:outline-none focus:border-primary-accent/50"
@@ -59,7 +66,7 @@ export default function Login() {
           />
           <button
             type="submit"
-            className="w-full glass text-white font-bold py-3 rounded-xl transition-all"
+            className="w-full bg-primary-accent text-white font-bold py-3 rounded-xl hover:bg-opacity-80 transition-all" // Added bg-primary-accent
           >
             Login
           </button>
@@ -76,7 +83,9 @@ export default function Login() {
           onClick={handleGoogleLogin}
           className="w-full bg-white text-gray-800 font-bold py-3 rounded-xl hover:bg-opacity-90 transition-all flex items-center justify-center gap-2"
         >
-          <img src="/Google.svg" className=" h-8 w-8" /> LogIn with Google
+          <img src="/Google.svg" className=" h-8 w-8" alt="Google icon" />{" "}
+          {/* Ensure Google.svg is in /public */}
+          LogIn with Google
         </button>
         <p className="text-center text-secondary-text mt-6">
           Don't have an account?{" "}

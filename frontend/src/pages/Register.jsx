@@ -1,6 +1,8 @@
+// filename: frontend/src/pages/Register.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+// import { FaGoogle } from 'react-icons/fa'; // Icon is handled by img src
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -13,9 +15,14 @@ export default function Register() {
   const handleEmailSignUp = async (e) => {
     e.preventDefault();
     setError("");
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
     try {
       await signUp(name, email, password);
-      navigate("/");
+      // --- FIX: Redirect to /mylist ---
+      navigate("/mylist"); // Auto-login and redirect
     } catch (err) {
       setError(err.message);
     }
@@ -25,7 +32,8 @@ export default function Register() {
     setError("");
     try {
       await logInWithGoogle();
-      navigate("/");
+      // --- FIX: Redirect to /mylist ---
+      navigate("/mylist"); // Redirect to my list on successful login
     } catch (err) {
       setError(err.message);
     }
@@ -84,7 +92,9 @@ export default function Register() {
           onClick={handleGoogleLogin}
           className="w-full bg-white text-gray-800 font-bold py-3 rounded-xl hover:bg-opacity-90 transition-all flex items-center justify-center gap-2"
         >
-          <img src="/Google.svg" className="h-8 w-8" /> Sign up with Google
+          <img src="/Google.svg" className="h-8 w-8" alt="Google icon" />{" "}
+          {/* Ensure Google.svg is in /public */}
+          Sign up with Google
         </button>
         <p className="text-center text-secondary-text mt-6">
           Already have an account?{" "}
