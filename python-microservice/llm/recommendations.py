@@ -3,19 +3,26 @@ import google.generativeai as genai
 import json
 from dotenv import load_dotenv
 from scrapers.drama_scraper import find_poster
-import traceback # For detailed error logging
+import traceback 
 
 load_dotenv()
-GEMINI_API_CONFIGURED = bool(os.getenv("GEMINI_API_KEY"))
+GEMINI_API_CONFIGURED = False
 PLACEHOLDER_POSTER = "https://via.placeholder.com/500x750.png?text=Poster+Not+Found"
 
+try:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if api_key:
+        genai.configure(api_key=api_key)
+        GEMINI_API_CONFIGURED = True
+        print("Gemini API Key configured.")
+    else:
+        print("Warning: GEMINI_API_KEY not found in environment variables.")
+except Exception as e:
+    print(f"Error configuring Gemini API: {e}")
 
-# Modify function to accept exclude_titles
+
+
 def get_llm_recommendations_for_genre(genre, exclude_titles=None):
-    """
-    Uses Gemini to get drama recommendations, optionally excluding titles,
-    and then fetches poster URLs.
-    """
     if not GEMINI_API_CONFIGURED:
          print("Gemini API not configured. Cannot fetch recommendations.")
          return {"recommendations": []}
@@ -23,32 +30,27 @@ def get_llm_recommendations_for_genre(genre, exclude_titles=None):
     if exclude_titles is None:
         exclude_titles = []
 
-    # --- Construct the exclusion part of the prompt ---
     exclusion_prompt_part = ""
     if exclude_titles:
-        # Format titles for clarity in the prompt
-        # Ensure quotes within titles are handled if necessary, though unlikely for standard titles
-        formatted_titles = ", ".join([json.dumps(title) for title in exclude_titles]) # Use json.dumps for safety
+        formatted_titles = ", ".join([json.dumps(title) for title in exclude_titles])
         exclusion_prompt_part = f"\n\nCRITICAL: Do NOT include any of the following titles in your recommendations, even if they fit the genre: {formatted_titles}."
-    # --- End exclusion part ---
-
-    # Updated Prompt
     prompt = f"""
     Please recommend exactly 5 K-dramas similar to popular dramas in the **{genre}** genre.
     Focus on dramas that are generally well-regarded or popular within that genre.
     For each recommendation, provide the title, the release year (as a number), a brief reason (1-2 sentences explaining the similarity or appeal),
-    and the status ('completed', 'ongoing', or 'upcoming') if known (default to 'completed' if unsure, verify if possible).
+    the main genres (as a list of strings), and the status ('completed', 'ongoing', or 'upcoming') if known (default to 'completed' if unsure, verify if possible).
     Leave posterUrl null for now.
     {exclusion_prompt_part}
 
     Format the response strictly as a JSON object with a single key "recommendations",
-    which is a list of exactly 5 objects, each having "title" (string), "year" (number or null), "reason" (string), "status" (string: 'completed', 'ongoing', or 'upcoming'), and "posterUrl" (null).
+    which is a list of exactly 5 objects, each having "title" (string), "year" (number or null), "reason" (string), "genres" (list of strings or null), "status" (string: 'completed', 'ongoing', or 'upcoming'), and "posterUrl" (null).
 
     Example structure for a recommendation object:
     {{
       "title": "Example Drama Title",
       "year": 2023,
       "reason": "This drama features similar thrilling plot twists and a strong female lead.",
+      "genres": ["Thriller", "Romance"],
       "status": "completed",
       "posterUrl": null
     }}
@@ -58,25 +60,27 @@ def get_llm_recommendations_for_genre(genre, exclude_titles=None):
     Make sure to provide exactly 5 unique recommendations that are not in the exclusion list. Prioritize dramas that are already completed or currently ongoing over upcoming ones if possible.
     """
 
-    model = genai.GenerativeModel('gemini-2.5-flash') # Or your preferred model
+    model = genai.GenerativeModel('gemini-2.5-flash') 
 
     try:
         print(f"Sending recommendation prompt to Gemini for genre: {genre}. Excluding {len(exclude_titles)} titles.")
-        # print(f"Prompt: {prompt}") # Optionally print the full prompt for debugging
         response = model.generate_content(prompt)
 
-        # Basic check if response has content
         if not hasattr(response, 'text') or not response.text:
              print("LLM response was empty.")
-             # Check for safety feedback if available in the response object structure
              safety_feedback = getattr(response, 'prompt_feedback', None)
              if safety_feedback:
                  print(f"Safety Feedback: {safety_feedback}")
-             raise ValueError("LLM response was empty or potentially blocked.")
+             finish_reason = getattr(response, 'candidates', [{}])[0].get('finish_reason', 'UNKNOWN')
+             print(f"Finish Reason: {finish_reason}")
+             if finish_reason != 'STOP':
+                 raise ValueError(f"LLM response potentially blocked or stopped unexpectedly. Reason: {finish_reason}")
+             else:
+                raise ValueError("LLM response was empty.")
+
 
         cleaned_response = response.text.strip().lstrip('```json').rstrip('```').strip()
 
-        # print(f"Gemini Raw Rec Response:\n{response.text}")
         print(f"Cleaned Rec Response:\n{cleaned_response}")
 
         recommendations_data = json.loads(cleaned_response)
@@ -84,38 +88,39 @@ def get_llm_recommendations_for_genre(genre, exclude_titles=None):
         if not isinstance(recommendations_data, dict) or "recommendations" not in recommendations_data or not isinstance(recommendations_data["recommendations"], list):
              raise ValueError("LLM response for recommendations is not in the expected format (missing 'recommendations' list).")
 
-        # Normalize and filter recommendations based on exclude_titles (case-insensitive)
         exclude_titles_lower = {title.lower() for title in exclude_titles}
         filtered_recs = []
-        titles_seen = set() # To ensure uniqueness from LLM output
+        titles_seen = set()
         for rec in recommendations_data.get("recommendations", []):
             title = rec.get("title")
             if title:
                  title_lower = title.lower()
                  if title_lower not in exclude_titles_lower and title_lower not in titles_seen:
-                      filtered_recs.append(rec)
-                      titles_seen.add(title_lower)
+                      if all(k in rec for k in ["title", "year", "reason", "status", "posterUrl", "genres"]):
+                           filtered_recs.append(rec)
+                           titles_seen.add(title_lower)
+                      else:
+                          print(f"Warning: Recommendation for '{title}' missing expected keys, skipping.")
             else:
                  print("Warning: Recommendation found with no title.")
 
 
-        # If filtering removed too many, log it. The frontend expects a list, even if short.
-        if len(filtered_recs) < 5 : # Check if less than requested
+        if len(filtered_recs) < len(recommendations_data.get("recommendations", [])):
+             print(f"Filtered out {len(recommendations_data.get('recommendations', [])) - len(filtered_recs)} recommendations based on exclusion list or duplicates.")
+        if len(filtered_recs) < 5 :
              print(f"Warning: LLM provided fewer than 5 unique, non-excluded recommendations ({len(filtered_recs)} found).")
 
 
         print(f"Successfully parsed {len(filtered_recs)} valid Gemini recommendations for '{genre}'")
 
         updated_recs = []
-        for rec in filtered_recs: # Use the filtered list
+        for rec in filtered_recs:
             title = rec.get("title")
-            # Default status to 'completed' if missing or invalid
             status = str(rec.get("status", "completed")).lower()
             if status not in ['completed', 'ongoing', 'upcoming']:
                  status = 'completed'
-            rec['status'] = status # Ensure status is valid in the object
+            rec['status'] = status
 
-            # Ensure year is a number or null
             year = rec.get('year')
             if year is not None:
                 try:
@@ -124,21 +129,27 @@ def get_llm_recommendations_for_genre(genre, exclude_titles=None):
                     print(f"Warning: Invalid year '{year}' for title '{title}', setting to null.")
                     rec['year'] = None
             else:
-                 rec['year'] = None # Ensure it's explicitly null if missing
+                 rec['year'] = None
+
+            genres_list = rec.get('genres')
+            if genres_list is None:
+                rec['genres'] = []
+            elif not isinstance(genres_list, list):
+                print(f"Warning: Invalid genres format '{genres_list}' for title '{title}', setting to empty list.")
+                rec['genres'] = []
+            else:
+                rec['genres'] = [str(g) for g in genres_list if isinstance(g, (str, int, float))]
 
 
-            # Fetch poster URL
             if status == 'upcoming':
                  rec["posterUrl"] = "https://via.placeholder.com/500x750.png?text=Upcoming"
-                 # print(f"Skipping poster search for upcoming drama: {title}")
             elif title:
-                # print(f"Fetching poster for recommendation: {title}")
-                rec["posterUrl"] = find_poster(title) # find_poster handles fallback internally
+                rec["posterUrl"] = find_poster(title)
             else:
-                 rec["posterUrl"] = PLACEHOLDER_POSTER # Use constant
+                 rec["posterUrl"] = PLACEHOLDER_POSTER
             updated_recs.append(rec)
 
-        return {"recommendations": updated_recs} # Return the updated list within the expected structure
+        return {"recommendations": updated_recs}
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON response from LLM for '{genre}' recommendations: {e}")
@@ -146,5 +157,5 @@ def get_llm_recommendations_for_genre(genre, exclude_titles=None):
         return {"recommendations": []}
     except Exception as e:
         print(f"Error calling Gemini API or processing recommendations for '{genre}': {e}")
-        traceback.print_exc() # Print full traceback for debugging
+        traceback.print_exc()
         return {"recommendations": []}

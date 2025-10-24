@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, Trash2, ListTodo, Eye, Check } from "lucide-react";
+import { X, Heart, Trash2, ListTodo, Eye, Check, Loader } from "lucide-react";
 import { useEffect } from "react";
 
 const backdropVariants = {
@@ -20,6 +20,7 @@ const modalVariants = {
 
 const buttonHoverTransition = { type: "spring", stiffness: 300, damping: 15 };
 const buttonHoverEffect = { scale: 1.05, rotateX: -10, y: -3 };
+const disabledButtonClasses = "opacity-50 cursor-not-allowed";
 
 export default function DramaDetailsModal({
   isOpen,
@@ -28,10 +29,11 @@ export default function DramaDetailsModal({
   onToggleFavorite,
   onSetStatus,
   onDelete,
+  isProcessing = false,
 }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === "Escape" && isOpen) {
+      if (event.key === "Escape" && isOpen && !isProcessing) {
         onClose();
       }
     };
@@ -41,7 +43,7 @@ export default function DramaDetailsModal({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isProcessing]);
 
   if (!isOpen || !drama) return null;
 
@@ -61,12 +63,11 @@ export default function DramaDetailsModal({
     },
   ];
 
-  const handleSetStatus =
-    onSetStatus || (() => console.warn("onSetStatus handler not provided"));
-  const handleToggleFavorite =
-    onToggleFavorite ||
-    (() => console.warn("onToggleFavorite handler not provided"));
+  const handleSetStatus = onSetStatus || (() => {});
+  const handleToggleFavorite = onToggleFavorite || (() => {});
   const handleDelete = onDelete;
+
+  const currentDramaId = drama.id || drama.title;
 
   return (
     <AnimatePresence>
@@ -78,8 +79,10 @@ export default function DramaDetailsModal({
             initial="hidden"
             animate="visible"
             exit="hidden"
-            onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 cursor-pointer"
+            onClick={!isProcessing ? onClose : undefined}
+            className={`fixed inset-0 bg-black/70 backdrop-blur-sm z-40 ${
+              !isProcessing ? "cursor-pointer" : ""
+            }`}
             aria-hidden="true"
           />
 
@@ -96,9 +99,17 @@ export default function DramaDetailsModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
           >
             <div className="glass w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[95vh] relative">
+              {isProcessing && (
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-30 flex items-center justify-center rounded-3xl">
+                  <Loader className="w-10 h-10 animate-spin text-white" />
+                </div>
+              )}
               <button
-                onClick={onClose}
-                className="absolute top-3 right-3 text-white bg-black/50 rounded-full p-1.5 hover:bg-black/70 transition-colors z-30"
+                onClick={!isProcessing ? onClose : undefined}
+                disabled={isProcessing}
+                className={`absolute top-3 right-3 text-white bg-black/50 rounded-full p-1.5 hover:bg-black/70 transition-colors z-40 ${
+                  isProcessing ? disabledButtonClasses : ""
+                }`}
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -135,7 +146,7 @@ export default function DramaDetailsModal({
                 <p className="text-secondary-text mb-3 md:mb-4 text-sm">
                   {drama.year}
                   {drama.genres && drama.genres.length > 0
-                    ? `• ${drama.genres.join(", ")}`
+                    ? ` • ${drama.genres.join(", ")}`
                     : ""}
                 </p>
 
@@ -145,62 +156,71 @@ export default function DramaDetailsModal({
                   </p>
                 )}
 
-                <div className="mb-5 md:mb-6 flex-shrink-0">
-                  <p className="text-secondary-text text-sm font-medium mb-2">
-                    {isOnMyList ? "Update Status:" : "Add to List As:"}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    {statuses.map((statusInfo) => (
-                      <motion.button
-                        key={statusInfo.value}
-                        onClick={() =>
-                          handleSetStatus(drama.id, statusInfo.value)
-                        }
-                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                          drama.status === statusInfo.value
-                            ? "bg-primary-accent text-white shadow-md"
-                            : "bg-white/10 text-secondary-text hover:bg-white/20 hover:text-foreground"
-                        }`}
-                        aria-pressed={drama.status === statusInfo.value}
-                        whileHover={buttonHoverEffect}
-                        transition={buttonHoverTransition}
-                      >
-                        {statusInfo.icon}
-                        {statusInfo.label}
-                      </motion.button>
-                    ))}
+                {(onSetStatus || !isOnMyList) && (
+                  <div className="mb-5 md:mb-6 flex-shrink-0">
+                    <p className="text-secondary-text text-sm font-medium mb-2">
+                      {isOnMyList ? "Update Status:" : "Add to List As:"}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      {statuses.map((statusInfo) => (
+                        <motion.button
+                          key={statusInfo.value}
+                          onClick={() =>
+                            handleSetStatus(currentDramaId, statusInfo.value)
+                          }
+                          disabled={isProcessing}
+                          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                            drama.status === statusInfo.value
+                              ? "bg-primary-accent text-white shadow-md"
+                              : "bg-white/10 text-secondary-text hover:bg-white/20 hover:text-foreground"
+                          } ${isProcessing ? disabledButtonClasses : ""}`}
+                          aria-pressed={drama.status === statusInfo.value}
+                          whileHover={!isProcessing ? buttonHoverEffect : {}}
+                          transition={buttonHoverTransition}
+                        >
+                          {statusInfo.icon}
+                          {statusInfo.label}
+                        </motion.button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-auto pt-4 md:pt-6 border-t border-glass-border/30 flex-shrink-0">
-                  <motion.button
-                    onClick={() =>
-                      handleToggleFavorite(drama.id, drama.favorite)
-                    }
-                    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all w-full sm:w-auto ${
-                      drama.favorite
-                        ? "bg-pink-500/20 text-pink-300 hover:bg-pink-500/30"
-                        : "bg-white/10 text-secondary-text hover:bg-white/20 hover:text-foreground"
-                    }`}
-                    whileHover={buttonHoverEffect}
-                    transition={buttonHoverTransition}
-                  >
-                    <Heart
-                      className={`w-5 h-5 transition-colors ${
-                        drama.favorite ? "fill-pink-400 text-pink-400" : ""
-                      }`}
-                    />
-                    {isOnMyList
-                      ? drama.favorite
-                        ? "Unfavorite"
-                        : "Favorite"
-                      : "Add as Favorite"}
-                  </motion.button>
+                  {(onToggleFavorite || !isOnMyList) && (
+                    <motion.button
+                      onClick={() =>
+                        handleToggleFavorite(currentDramaId, drama.favorite)
+                      }
+                      disabled={isProcessing}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all w-full sm:w-auto ${
+                        drama.favorite
+                          ? "bg-pink-500/20 text-pink-300 hover:bg-pink-500/30"
+                          : "bg-white/10 text-secondary-text hover:bg-white/20 hover:text-foreground"
+                      } ${isProcessing ? disabledButtonClasses : ""}`}
+                      whileHover={!isProcessing ? buttonHoverEffect : {}}
+                      transition={buttonHoverTransition}
+                    >
+                      <Heart
+                        className={`w-5 h-5 transition-colors ${
+                          drama.favorite ? "fill-pink-400 text-pink-400" : ""
+                        }`}
+                      />
+                      {isOnMyList
+                        ? drama.favorite
+                          ? "Unfavorite"
+                          : "Favorite"
+                        : "Add as Favorite"}
+                    </motion.button>
+                  )}
                   {isOnMyList && handleDelete && (
                     <motion.button
-                      onClick={() => handleDelete(drama.id)}
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all w-full sm:w-auto bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                      whileHover={buttonHoverEffect}
+                      onClick={() => handleDelete(currentDramaId)}
+                      disabled={isProcessing}
+                      className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all w-full sm:w-auto bg-red-500/20 text-red-300 hover:bg-red-500/30 ${
+                        isProcessing ? disabledButtonClasses : ""
+                      }`}
+                      whileHover={!isProcessing ? buttonHoverEffect : {}}
                       transition={buttonHoverTransition}
                     >
                       <Trash2 className="w-5 h-5" />

@@ -50,20 +50,13 @@ export const AuthContextProvider = ({ children }) => {
         email,
         password
       );
-
-      console.log("Firebase user created:", userCredential.user.uid);
-
       const token = await userCredential.user.getIdToken();
-
       const { data } = await api.post(
         "/users/register",
         { name, email },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      console.log("MongoDB user created:", data._id);
       setDbUser(data);
-
       return data;
     } catch (error) {
       console.error("Sign up error:", error);
@@ -78,24 +71,16 @@ export const AuthContextProvider = ({ children }) => {
         email,
         password
       );
-
-      console.log("Firebase login successful:", userCredential.user.uid);
-
       const { data } = await api.get("/users/profile");
-
-      console.log("MongoDB user fetched:", data._id);
       setDbUser(data);
-
       return data;
     } catch (error) {
       console.error("Login error:", error);
-
       if (error.response?.status === 404) {
         throw new Error(
           "Account not found in database. Please sign up first or contact support."
         );
       }
-
       throw error;
     }
   };
@@ -103,30 +88,21 @@ export const AuthContextProvider = ({ children }) => {
   const logInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-
-      console.log("Google popup successful:", result.user.uid);
-
       const token = await result.user.getIdToken();
-
       const { data } = await api.post(
         "/users/google",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      console.log("MongoDB user synced:", data._id);
       setDbUser(data);
-
       return data;
     } catch (error) {
       console.error("Google sign in error:", error);
-
       try {
         await signOut(auth);
       } catch (signOutError) {
         console.error("Failed to sign out after error:", signOutError);
       }
-
       throw error;
     }
   };
@@ -144,10 +120,8 @@ export const AuthContextProvider = ({ children }) => {
 
   const fetchUserProfile = async () => {
     try {
-      console.log("Fetching user profile from database...");
       const { data } = await api.get("/users/profile");
       setDbUser(data);
-      console.log("Profile fetched:", data._id);
       return data;
     } catch (error) {
       console.error("Failed to fetch profile:", error);
@@ -157,29 +131,17 @@ export const AuthContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    console.log("Setting up auth state listener...");
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log(
-        "Auth state changed:",
-        firebaseUser ? firebaseUser.uid : "null"
-      );
-
       setCurrentUser(firebaseUser);
-
       if (firebaseUser) {
         await fetchUserProfile();
       } else {
         setDbUser(null);
       }
-
       setLoading(false);
     });
 
-    return () => {
-      console.log("Cleaning up auth state listener");
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   const value = {
