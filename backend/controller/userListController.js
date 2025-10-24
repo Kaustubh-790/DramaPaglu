@@ -92,3 +92,35 @@ export const deleteListItem = asyncHandler(async (req, res) => {
 
   res.json({ message: "Drama removed from list", dramaId: dramaId });
 });
+
+export const getMyFavorites = asyncHandler(async (req, res) => {
+  const userId = req.user.uid;
+
+  const myFavorites = await UserList.find({ userId, favorite: true })
+    .populate("dramaId")
+    .sort({ createdAt: -1 });
+
+  const formattedList = myFavorites
+    .map((item) => {
+      if (!item.dramaId) {
+        console.warn(
+          `Favorite item ${item._id} has missing dramaId ${item.dramaId}`
+        );
+        return null;
+      }
+      return {
+        id: item.dramaId._id,
+        listId: item._id,
+        title: item.dramaId.title,
+        poster: item.dramaId.posterUrl,
+        genres: item.dramaId.genres,
+        year: item.dramaId.year,
+        status: item.status,
+        favorite: item.favorite,
+        description: item.dramaId.description,
+      };
+    })
+    .filter((item) => item !== null);
+
+  res.json(formattedList);
+});

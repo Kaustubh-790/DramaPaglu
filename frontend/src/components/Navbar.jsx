@@ -13,7 +13,7 @@ export default function Navbar() {
   const links = [
     { to: "/", label: "Home" },
     { to: "/mylist", label: "My List" },
-    { to: "/discover", label: "Discover" },
+    { to: "/favorites", label: "Favourites" },
   ];
 
   const handleLogout = async () => {
@@ -104,13 +104,7 @@ export default function Navbar() {
                 to="/login"
                 className="text-base font-medium text-secondary-text hover:text-foreground"
               >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="text-base font-medium bg-primary-accent text-white px-4 py-1.5 rounded-full hover:bg-opacity-80 transition-all"
-              >
-                Sign Up
+                Get Started
               </Link>
             </>
           )}

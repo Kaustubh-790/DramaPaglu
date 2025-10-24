@@ -2,10 +2,10 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./layout/Layout";
 import Home from "./pages/Home";
 import MyList from "./pages/MyList";
-import Discover from "./pages/Discover";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Favorites from "./pages/Favorites";
 
 export default function App() {
   return (
@@ -15,7 +15,6 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/discover" element={<Discover />} />
 
           {/* Protected Routes */}
           <Route
@@ -23,6 +22,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MyList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <Favorites />
               </ProtectedRoute>
             }
           />
