@@ -1,8 +1,8 @@
-// filename: frontend/src/pages/MyList.jsx
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Listbox } from "@headlessui/react";
 import DramaCard from "../components/DramaCard";
-import { Plus, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown, Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const genres = [
@@ -45,7 +45,7 @@ export default function MyList() {
     if (!newDramaTitle.trim()) return;
 
     try {
-      const { data: newDrama } = await api.post("/api/dramas/add", {
+      const { data: newDrama } = await api.post("/dramas/add", {
         title: newDramaTitle,
       });
 
@@ -104,90 +104,135 @@ export default function MyList() {
       : dramas.filter((d) => d.genres.includes(selectedGenre));
 
   return (
-    <div className="space-y-10 pb-20">
-      <section>
-        <form onSubmit={handleAddDrama} className="flex gap-4 max-w-lg mx-auto">
-          <input
-            type="text"
-            value={newDramaTitle}
-            onChange={(e) => setNewDramaTitle(e.target.value)}
-            placeholder="Add a new drama by title (e.g., Queen of Tears)"
-            className="flex-grow glass px-5 py-3 rounded-xl text-foreground placeholder-secondary-text focus:outline-none focus:border-primary-accent/50"
-          />
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            className="glass glass-hover px-5 py-3 rounded-xl text-foreground font-bold"
-          >
-            <Plus className="w-6 h-6" />
-          </motion.button>
-        </form>
-      </section>
+    <div className="min-h-screen w-full relative pt-20">
+      <div className="fixed inset-0 z-0">
+        <img
+          src="/myList.png"
+          alt="Background"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 backdrop-blur-[3px] bg-white/10"></div>
+      </div>
 
-      <section className="flex justify-center">
-        <div className="relative">
-          <select
-            value={selectedGenre}
-            onChange={(e) => setSelectedGenre(e.target.value)}
-            className="glass glass-hover appearance-none px-6 py-3 rounded-xl text-foreground font-medium focus:outline-none focus:border-primary-accent/50 pr-10"
-          >
-            {genres.map((g) => (
-              <option
-                key={g}
-                value={g}
-                className="bg-background text-foreground"
-              >
-                {g}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="w-5 h-5 text-secondary-text absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
-      </section>
-
-      {error && (
-        <div className="text-center bg-red-500/20 text-red-300 p-3 rounded-lg max-w-lg mx-auto">
-          {error}
-        </div>
-      )}
-
-      <motion.div
-        layout
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
-      >
-        {loading ? (
-          <p className="text-secondary-text col-span-full text-center">
-            Loading your list...
-          </p>
-        ) : filteredDramas.length > 0 ? (
-          filteredDramas.map((drama, i) => (
-            <motion.div
-              key={drama.id}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ delay: i * 0.05 }}
+      <div className="relative z-10 px-6 py-10 space-y-10">
+        <section className="max-w-2xl mx-auto pt-10">
+          <form onSubmit={handleAddDrama} className="flex gap-4">
+            <input
+              type="text"
+              value={newDramaTitle}
+              onChange={(e) => setNewDramaTitle(e.target.value)}
+              placeholder="Add a new drama by title"
+              className="flex-grow bg-white/20 backdrop-blur-md border border-white/30 px-6 py-4 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-pink-400/50 shadow-lg"
+            />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="submit"
+              className="bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 px-6 py-4 rounded-2xl text-white font-bold shadow-lg transition"
             >
-              <DramaCard
-                drama={drama}
-                onToggleFavorite={() =>
-                  handleToggleFavorite(drama.id, drama.favorite)
-                }
-                onToggleStatus={() =>
-                  handleToggleStatus(drama.id, drama.status)
-                }
-                onDelete={() => handleDeleteDrama(drama.id)}
-              />
-            </motion.div>
-          ))
-        ) : (
-          <p className="text-secondary-text col-span-full text-center">
-            Your list is empty. Add a drama to get started!
-          </p>
+              <Plus className="w-6 h-6" />
+            </motion.button>
+          </form>
+        </section>
+
+        <section className="flex justify-center">
+          <Listbox value={selectedGenre} onChange={setSelectedGenre}>
+            <div className="relative w-56">
+              <Listbox.Button className="relative w-full cursor-pointer bg-white/20 backdrop-blur-md border border-white/30 px-6 py-4 rounded-2xl text-white font-medium focus:outline-none focus:ring-2 focus:ring-pink-400/50 shadow-lg text-left">
+                <span className="block truncate">{selectedGenre}</span>
+                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                  <ChevronDown
+                    className="h-5 w-5 text-white"
+                    aria-hidden="true"
+                  />
+                </span>
+              </Listbox.Button>
+              <AnimatePresence>
+                <Listbox.Options
+                  as={motion.ul}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="absolute mt-2 max-h-60 w-full overflow-auto rounded-2xl bg-white/20 backdrop-blur-lg border border-white/30 py-2 text-base shadow-lg  ring-opacity-5 focus:outline-none sm:text-sm z-50"
+                >
+                  {genres.map((genre) => (
+                    <Listbox.Option
+                      key={genre}
+                      className={({ active }) =>
+                        `relative cursor-pointer select-none py-3 pl-10 pr-4 ${
+                          active ? "bg-pink-400/30 text-white" : "text-white/80"
+                        }`
+                      }
+                      value={genre}
+                    >
+                      {({ selected }) => (
+                        <>
+                          <span
+                            className={`block truncate ${
+                              selected ? "font-bold text-white" : "font-normal"
+                            }`}
+                          >
+                            {genre}
+                          </span>
+                          {selected ? (
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-pink-400">
+                              <Check className="h-5 w-5" aria-hidden="true" />
+                            </span>
+                          ) : null}
+                        </>
+                      )}
+                    </Listbox.Option>
+                  ))}
+                </Listbox.Options>
+              </AnimatePresence>
+            </div>
+          </Listbox>
+        </section>
+
+        {error && (
+          <div className="text-center bg-red-500/60 text-white-300 p-3 rounded-lg max-w-lg mx-auto">
+            {error}
+          </div>
         )}
-      </motion.div>
+
+        <motion.div
+          layout
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+        >
+          {loading ? (
+            <p className="text-secondary-text col-span-full text-center">
+              Loading your list...
+            </p>
+          ) : filteredDramas.length > 0 ? (
+            filteredDramas.map((drama, i) => (
+              <motion.div
+                key={drama.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <DramaCard
+                  drama={drama}
+                  onToggleFavorite={() =>
+                    handleToggleFavorite(drama.id, drama.favorite)
+                  }
+                  onToggleStatus={() =>
+                    handleToggleStatus(drama.id, drama.status)
+                  }
+                  onDelete={() => handleDeleteDrama(drama.id)}
+                />
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-secondary-text col-span-full text-center bg-white/20 backdrop-blur-md border border-white/30 appearance-none py-4 rounded-2xl text-white font-medium  pr-12 shadow-lg">
+              Your list is empty. Add a drama to get started!
+            </p>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 }
