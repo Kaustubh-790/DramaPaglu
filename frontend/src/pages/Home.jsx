@@ -119,13 +119,13 @@ function HeroSection() {
         className="relative z-20 px-4 md:px-10 lg:px-16 max-w-2xl"
       >
         <h1 className="text-4xl md:text-6xl font-heading text-foreground drop-shadow-lg">
-          Your Ultimate K-Drama Companion
+          The Ultimate K-Drama Companion
         </h1>
         <p className="text-lg md:text-xl text-secondary-text mt-4 max-w-lg">
           Discover, track, and organize your favorite Korean dramas all in one
           place
         </p>
-        <motion.button
+        {/* <motion.button
           whileHover={{
             scale: 1.05,
             boxShadow: "0 0 10px rgba(194, 68, 42, 0.5)",
@@ -134,7 +134,7 @@ function HeroSection() {
           className="mt-8 px-8 py-3 glass text-foreground font-heading font-bold text-lg rounded-xl shadow-lg transition-all"
         >
           Get Started
-        </motion.button>
+        </motion.button> */}
       </motion.div>
     </div>
   );
