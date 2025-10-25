@@ -13,6 +13,7 @@ const backgroundMap = {
   "/login": { light: "/login-signup.png", dark: "/login-signup.png" },
   "/register": { light: "/login-signup.png", dark: "/login-signup.png" },
   "/search-results": { light: "/myList.png", dark: "/myList(dark).png" },
+  "/profile": { light: "/profile.png", dark: "/profile(dark).png" },
 };
 
 const defaultBackground = { light: "/hero.png", dark: "/hero(dark).png" };

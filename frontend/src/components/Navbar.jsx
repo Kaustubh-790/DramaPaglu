@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, Fragment, useEffect, useRef } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext"; // Import useTheme
+import { useTheme } from "../context/ThemeContext";
 
 const dropdownVariants = {
   hidden: {
@@ -25,14 +25,14 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { currentUser, dbUser, logOut } = useAuth(); // Removed api, using from useAuth context
-  const { theme, toggleTheme } = useTheme(); // Get theme and toggle function
+  const { currentUser, dbUser, logOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const links = [
     { to: "/", label: "Home" },
     { to: "/mylist", label: "My List" },
-    { to: "/favorites", label: "Favourites" }, // Corrected spelling
+    { to: "/favorites", label: "Favourites" },
   ];
 
   const handleLogout = async () => {
@@ -60,11 +60,8 @@ export default function Navbar() {
     }
   };
 
-  // Removed local toggleTheme, using the one from context
-
   return (
     <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-      {/* Added dark mode class for glass effect based on theme */}
       <div className="glass flex items-center justify-between w-full max-w-6xl mx-auto rounded-full px-6 md:px-8 py-3 md:py-4 shadow-lg">
         <div className="flex-shrink-0 flex justify-start">
           <Link
@@ -75,7 +72,6 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Navbar links with dark mode text colors */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8 justify-center flex-1">
           {links.map((l) => (
             <Link
@@ -96,7 +92,6 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Right side icons and profile */}
         <div className="flex items-center gap-3 md:gap-5 justify-end">
           <form onSubmit={handleSearchSubmit} className="flex items-center">
             <motion.input
@@ -113,7 +108,6 @@ export default function Navbar() {
                 paddingRight: isSearchOpen ? "0.75rem" : "0rem",
               }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              // Added dark mode styles for input
               className="glass h-8 md:h-9 rounded-full text-xs md:text-sm text-foreground placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-primary-accent/50 focus:border-transparent"
             />
             <Search
@@ -156,7 +150,6 @@ export default function Navbar() {
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
               >
-                {/* Added dark mode styles for dropdown */}
                 <Menu.Items
                   as={motion.div}
                   variants={dropdownVariants}
@@ -169,7 +162,7 @@ export default function Navbar() {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          to="/profile" // Assuming a profile page route exists or will be created
+                          to="/profile"
                           className={`${
                             active ? "bg-white/10 dark:bg-white/5" : ""
                           } group flex w-full items-center px-4 py-2 text-sm text-foreground transition-colors`}
@@ -182,7 +175,7 @@ export default function Navbar() {
                     <Menu.Item>
                       {({ active }) => (
                         <button
-                          onClick={toggleTheme} // Use toggleTheme from context
+                          onClick={toggleTheme}
                           className={`${
                             active ? "bg-white/10 dark:bg-white/5" : ""
                           } group flex w-full items-center px-4 py-2 text-sm text-foreground transition-colors`}
@@ -224,9 +217,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Nav - Added dark mode styles */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-glass-border py-2 px-4 flex justify-around items-center">
-        {/* Simplified mobile nav - showing only Home, My List, Favourites if logged in */}
         <Link
           key="mobile-/"
           to="/"
@@ -236,7 +227,6 @@ export default function Navbar() {
               : "text-secondary-text hover:text-foreground"
           }`}
         >
-          {/* Using User icon for Home */}
           <User className="w-5 h-5 mb-1" />
           <span className="text-xs">Home</span>
         </Link>
@@ -251,7 +241,6 @@ export default function Navbar() {
                   : "text-secondary-text hover:text-foreground"
               }`}
             >
-              {/* Using List icon for My List */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 mb-1"

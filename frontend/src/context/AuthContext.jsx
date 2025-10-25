@@ -118,23 +118,37 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
-  const fetchUserProfile = async () => {
+  const fetchAndSetUserProfile = async () => {
+    if (!auth.currentUser) {
+      setDbUser(null);
+      return null;
+    }
     try {
       const { data } = await api.get("/users/profile");
       setDbUser(data);
+      console.log("DB User profile fetched/refreshed:", data);
       return data;
     } catch (error) {
       console.error("Failed to fetch profile:", error);
       setDbUser(null);
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.log("Auth error fetching profile, logging out.");
+        await logOut();
+      }
       return null;
     }
+  };
+
+  const refreshDbUser = async () => {
+    await fetchAndSetUserProfile();
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setCurrentUser(firebaseUser);
       if (firebaseUser) {
-        await fetchUserProfile();
+        await fetchAndSetUserProfile();
       } else {
         setDbUser(null);
       }
@@ -153,6 +167,7 @@ export const AuthContextProvider = ({ children }) => {
     logInWithGoogle,
     logOut,
     api,
+    refreshDbUser,
   };
 
   return (

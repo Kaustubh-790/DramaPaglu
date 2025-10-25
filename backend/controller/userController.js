@@ -1,5 +1,8 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/userModel.js";
+import axios from "axios";
+import sharp from "sharp";
+import FormData from "form-data";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email } = req.body;
@@ -47,7 +50,7 @@ const googleSignIn = asyncHandler(async (req, res) => {
     user.photoURL = picture || user.photoURL;
     await user.save();
   } else {
-    console.log("📝 User not found, creating new account");
+    console.log("User not found, creating new account");
 
     const emailExists = await User.findOne({ email });
     if (emailExists) {
@@ -95,4 +98,96 @@ const getUserProfile = asyncHandler(async (req, res) => {
   });
 });
 
-export { registerUser, googleSignIn, getUserProfile };
+const uploadToImgBB = async (buffer) => {
+  if (!process.env.IMGBB_API_KEY) {
+    throw new Error("ImgBB API key is not configured.");
+  }
+
+  const optimizedBuffer = await sharp(buffer)
+    .resize({ width: 300, height: 300, fit: "cover" })
+    .webp({ quality: 80 })
+    .toBuffer();
+
+  const formData = new FormData();
+  formData.append("image", optimizedBuffer, {
+    filename: "profile.webp",
+    contentType: "image/webp",
+  });
+
+  try {
+    const response = await axios.post(
+      `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+        },
+      }
+    );
+
+    if (response.data && response.data.data && response.data.data.url) {
+      return response.data.data.url;
+    } else {
+      console.error("ImgBB upload failed, response:", response.data);
+      throw new Error("Failed to upload image to ImgBB.");
+    }
+  } catch (error) {
+    console.error(
+      "Error uploading to ImgBB:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to upload image.");
+  }
+};
+
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const { uid } = req.user;
+  const { name } = req.body;
+
+  console.log("Updating profile for:", uid);
+  console.log("Received name:", name);
+  console.log("Received file:", req.file ? req.file.originalname : "No file");
+
+  const user = await User.findById(uid);
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  if (name && name.trim()) {
+    user.name = name.trim();
+  }
+
+  let newPhotoURL = user.photoURL;
+  if (req.file) {
+    try {
+      console.log(
+        `Optimizing and uploading ${req.file.originalname} to ImgBB...`
+      );
+      newPhotoURL = await uploadToImgBB(req.file.buffer);
+      user.photoURL = newPhotoURL;
+      console.log("ImgBB Upload successful, URL:", newPhotoURL);
+    } catch (uploadError) {
+      console.error("Profile picture upload failed:", uploadError);
+
+      res.status(500);
+      throw new Error(
+        `Failed to upload profile picture: ${uploadError.message}`
+      );
+    }
+  }
+
+  const updatedUser = await user.save();
+
+  console.log("Profile updated successfully for:", updatedUser._id);
+
+  res.json({
+    _id: updatedUser._id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    photoURL: updatedUser.photoURL || null,
+  });
+});
+
+export { registerUser, googleSignIn, getUserProfile, updateUserProfile };
