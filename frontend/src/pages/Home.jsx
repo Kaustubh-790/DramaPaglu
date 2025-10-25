@@ -38,9 +38,6 @@ export default function Home() {
   const [isAddingToList, setIsAddingToList] = useState(false);
 
   const fetchRecommendations = async (forceRefresh = false) => {
-    console.log(
-      `Fetching recs for ${selectedGenre}. Force refresh: ${forceRefresh}. User: ${currentUser?.uid}`
-    );
     setLoadingRecs(true);
     setRecError(null);
     setRecommendations([]);
@@ -53,9 +50,7 @@ export default function Home() {
         endpoint += "?refresh=true";
       }
 
-      console.log(`Calling API endpoint: ${endpoint}`);
       const { data } = await api.get(endpoint);
-      console.log("API Response:", data);
 
       const formattedRecs = (data.recommendations || []).map((rec) => ({
         id: rec._id || rec.title,
@@ -70,7 +65,6 @@ export default function Home() {
         listId: null,
       }));
 
-      console.log("Formatted Recs:", formattedRecs);
       setRecommendations(formattedRecs);
     } catch (error) {
       console.error("Failed to fetch recommendations:", error);
@@ -80,7 +74,6 @@ export default function Home() {
           "Could not load recommendations."
       );
     } finally {
-      console.log("Setting loadingRecs to false");
       setLoadingRecs(false);
     }
   };

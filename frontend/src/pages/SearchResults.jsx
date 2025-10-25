@@ -7,20 +7,19 @@ import DramaDetailsModal from "../components/DramaDetailsModal";
 import { useAuth } from "../context/AuthContext";
 
 const pageVariants = {
-  initial: { opacity: 0, y: 20 },
-  in: { opacity: 1, y: 0 },
-  out: { opacity: 0, y: -20 },
+  initial: { opacity: 0 },
+  in: { opacity: 1 },
+  out: { opacity: 0 },
 };
 
 const pageTransition = {
   type: "tween",
-  ease: "anticipate",
-  duration: 0.5,
+  ease: "easeInOut",
+  duration: 0.3,
 };
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
-  const query = searchParams.get("q");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,16 +29,18 @@ export default function SearchResults() {
   const [selectedDrama, setSelectedDrama] = useState(null);
 
   useEffect(() => {
+    setResults([]);
+    setError(null);
+    setLoading(true);
+
+    const query = searchParams.get("q");
+
     const fetchResults = async () => {
-      if (!query) {
-        setResults([]);
+      if (!query || query.trim() === "") {
         setLoading(false);
-        setError("No search query provided.");
         return;
       }
 
-      setLoading(true);
-      setError(null);
       try {
         const { data } = await api.get(
           `/dramas/search?q=${encodeURIComponent(query)}`
@@ -53,6 +54,7 @@ export default function SearchResults() {
           description: drama.description,
           status: null,
           favorite: null,
+          listId: null,
         }));
         setResults(formattedResults);
       } catch (err) {
@@ -68,8 +70,14 @@ export default function SearchResults() {
       }
     };
 
-    fetchResults();
-  }, [query, api]);
+    const timer = setTimeout(() => {
+      fetchResults();
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [searchParams, api]);
+
+  const displayQuery = searchParams.get("q") || "";
 
   const handleOpenModal = (drama) => {
     setSelectedDrama(drama);
@@ -91,41 +99,49 @@ export default function SearchResults() {
       transition={pageTransition}
     >
       <h1 className="text-3xl md:text-4xl font-heading mb-6 md:mb-8 text-center">
-        Search Results for "{query}"
+        Search Results {displayQuery ? `for "${displayQuery}"` : ""}
       </h1>
 
-      {loading && (
-        <div className="flex justify-center items-center py-20">
-          <Loader className="w-10 h-10 animate-spin" />
-        </div>
-      )}
+      <div className="min-h-[400px]">
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <Loader className="w-10 h-10 animate-spin" />
+          </div>
+        )}
 
-      {error && !loading && (
-        <div className="text-center bg-red-500/20 text-red-300 p-4 rounded-lg max-w-lg mx-auto flex items-center justify-center gap-2">
-          <AlertCircle className="w-5 h-5" />
-          <span>Error: {error}</span>
-        </div>
-      )}
+        {error && !loading && (
+          <div className="text-center bg-red-500/20 text-red-300 p-4 rounded-lg max-w-lg mx-auto flex items-center justify-center gap-2">
+            <AlertCircle className="w-5 h-5" />
+            <span>Error: {error}</span>
+          </div>
+        )}
 
-      {!loading && !error && results.length === 0 && (
-        <p className="text-center text-secondary-text py-20">
-          No dramas found matching your search.
-        </p>
-      )}
+        {!loading && !error && displayQuery && results.length === 0 && (
+          <p className="text-center text-secondary-text py-20">
+            No dramas found matching your search.
+          </p>
+        )}
 
-      {!loading && !error && results.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-          {results.map((drama) => (
-            <div
-              key={drama.id}
-              className="cursor-pointer"
-              onClick={() => handleOpenModal(drama)}
-            >
-              <DramaCard drama={drama} />
-            </div>
-          ))}
-        </div>
-      )}
+        {!loading && !error && !displayQuery && (
+          <p className="text-center text-secondary-text py-20">
+            Please enter a search term in the navigation bar.
+          </p>
+        )}
+
+        {!loading && !error && results.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {results.map((drama) => (
+              <div
+                key={drama.id}
+                className="cursor-pointer"
+                onClick={() => handleOpenModal(drama)}
+              >
+                <DramaCard drama={drama} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <DramaDetailsModal
         isOpen={isModalOpen}

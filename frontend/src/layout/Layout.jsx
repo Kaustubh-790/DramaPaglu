@@ -20,8 +20,8 @@ const defaultBackground = { light: "/hero.png", dark: "/hero(dark).png" };
 
 const pageVariants = {
   initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: 0.5, ease: "easeInOut" } },
-  exit: { opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } },
+  animate: { opacity: 1, transition: { duration: 0.4, ease: "easeInOut" } },
+  exit: { opacity: 0, transition: { duration: 0.2, ease: "easeInOut" } },
 };
 
 const Layout = () => {
@@ -29,32 +29,25 @@ const Layout = () => {
   const { theme } = useTheme();
 
   const backgroundSet = backgroundMap[location.pathname] || defaultBackground;
-
   const currentBackgroundUrl = backgroundSet[theme];
 
   return (
     <div className="flex flex-col min-h-screen relative text-foreground bg-background">
       <BackgroundImage imageUrl={currentBackgroundUrl} />
-
       <Navbar />
 
       <main className="flex-grow relative z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            variants={pageVariants}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        <Outlet />
       </main>
 
-      <footer className="mt-auto relative z-10">
+      <motion.footer
+        className="mt-auto relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+      >
         <Footer />
-      </footer>
+      </motion.footer>
     </div>
   );
 };
