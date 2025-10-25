@@ -320,9 +320,9 @@ function DramaCarouselHorizontal({ dramas, onCardClick }) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex justify-center">
       <motion.div
-        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+        className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide justify-center"
         variants={recommendationCarouselVariants}
         initial="hidden"
         animate="visible"
@@ -334,7 +334,7 @@ function DramaCarouselHorizontal({ dramas, onCardClick }) {
             variants={cardVariants}
             className="w-40 sm:w-48 md:w-52 shrink-0 cursor-pointer"
             onClick={() => onCardClick(drama)}
-            style={{ scrollSnapAlign: "start" }}
+            style={{ scrollSnapAlign: "center" }}
           >
             <DramaCard drama={drama} />
           </motion.div>
