@@ -55,7 +55,6 @@ def get_llm_drama_details(title):
 
     Rules:
     - Use verified and recent information (cross-check MyDramaList, TMDB, or official Korean sources).
-    - If data cannot be found, return null or an empty list [].
     - Output only a single, valid JSON object—no extra text, no markdown, no explanations.
     - The JSON must strictly follow the provided structure.
     - Leave `"posterUrl"` as an empty string "".

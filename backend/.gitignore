@@ -26,3 +26,5 @@ package-lock.json
 
 .env
 firebase-service-account-key.json
+
+scripts/
