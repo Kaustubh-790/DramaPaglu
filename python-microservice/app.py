@@ -1,8 +1,9 @@
 import os
 from flask import Flask, request, jsonify
-import json # Import json
+import json 
 from dotenv import load_dotenv
 from llm.drama_metadata import get_llm_drama_details
+from llm.url_metadata import get_structured_data_for_title_from_asianwiki # NEW IMPORT
 from scrapers.drama_scraper import find_poster as find_poster_url
 # Pass exclude_titles to the function
 from llm.recommendations import get_llm_recommendations_for_genre
@@ -47,13 +48,42 @@ def fetch_drama():
         poster_url = find_poster_url(llm_details.get("title", title))
         final_details = llm_details
         final_details["posterUrl"] = poster_url
-        print(f"Combined details for '{title}': Poster found - {'Yes' if poster_url and not poster_url.startswith('https://via.placeholder') else 'No'}")
+        print(f"Combined details for '{title}': Poster found - {'Yes' if poster_url and not poster_url.startswith('[https://via.placeholder](https://via.placeholder)') else 'No'}")
         return jsonify(final_details)
     except Exception as e:
         print(f"Error in /fetch endpoint processing '{title}': {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": "Internal server error during detail fetching"}), 500
+
+# NEW ENDPOINT: Fetch Structured Data from AsianWiki URL (derived from title)
+@app.route('/fetch-from-url', methods=['GET'])
+def fetch_drama_from_url():
+    title = request.args.get('title')
+    if not title:
+        return jsonify({"error": "Title parameter is required"}), 400
+    
+    try:
+        llm_details = get_structured_data_for_title_from_asianwiki(title)
+        
+        if llm_details.get("error"):
+            # If LLM failed, return the error
+            return jsonify(llm_details), 500
+        
+        # If LLM details are good, find poster using the extracted title
+        extracted_title = llm_details.get("title", title)
+        poster_url = find_poster_url(extracted_title)
+        
+        llm_details["posterUrl"] = poster_url
+        
+        print(f"URL Fetch successful for '{extracted_title}': Poster found - {'Yes' if poster_url and not poster_url.startswith('[https://via.placeholder](https://via.placeholder)') else 'No'}")
+        return jsonify(llm_details)
+        
+    except Exception as e:
+        print(f"Error in /fetch-from-url endpoint processing '{title}': {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Internal server error during structured detail fetching"}), 500
 
 
 @app.route('/recommend', methods=['GET'])

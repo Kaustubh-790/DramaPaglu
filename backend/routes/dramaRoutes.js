@@ -6,12 +6,14 @@ import {
   getTopDramas,
   getNewReleases,
   searchDramas,
+  testUrlScrape, // NEW IMPORT
 } from "../controller/dramaController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/add", protect, addDrama);
+router.get("/test-url-scrape", testUrlScrape); // NEW ROUTE
 router.get("/", getAllDramas);
 router.get("/search", searchDramas);
 router.get("/:id", getDramaById);

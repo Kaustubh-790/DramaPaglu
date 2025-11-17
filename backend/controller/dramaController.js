@@ -81,6 +81,32 @@ export const addDrama = asyncHandler(async (req, res) => {
   });
 });
 
+// NEW CONTROLLER FUNCTION
+export const testUrlScrape = asyncHandler(async (req, res) => {
+  const { title } = req.query;
+
+  if (!title) {
+    res.status(400);
+    throw new Error("Drama title query parameter is required");
+  }
+
+  try {
+    const { data } = await axios.get(
+      `${process.env.PYTHON_MICROSERVICE_URL}/fetch-from-url`,
+      { params: { title } }
+    );
+    // Python service returns the structured data including posterUrl
+    res.json(data);
+  } catch (error) {
+    console.error(
+      "Python /fetch-from-url service error:",
+      error.response?.data || error.message
+    );
+    res.status(500);
+    throw new Error("Failed to test URL scraping via external service.");
+  }
+});
+
 export const getAllDramas = asyncHandler(async (req, res) => {
   const dramas = await Drama.find({}).sort({ createdAt: -1 });
   res.json(dramas);

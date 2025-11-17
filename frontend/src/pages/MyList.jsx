@@ -10,6 +10,7 @@ import {
   Loader,
   ChevronLeft,
   ChevronRight,
+  FlaskConical, // Added for the test feature
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
@@ -36,6 +37,15 @@ export default function MyList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDrama, setSelectedDrama] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  // --- New State for URL Test Feature ---
+  const [testDramaTitle, setTestDramaTitle] = useState(
+    "Bon Appétit, Your Majesty"
+  );
+  const [testLoading, setTestLoading] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+  const [testError, setTestError] = useState(null);
+  // ----------------------------------------
 
   useEffect(() => {
     const fetchMyList = async () => {
@@ -76,6 +86,38 @@ export default function MyList() {
       setAddingDrama(false);
     }
   };
+
+  // --- New Handler for URL Test Feature ---
+  const handleTestUrlScrape = async (e) => {
+    e.preventDefault();
+    if (!testDramaTitle.trim()) {
+      setTestError("Please enter a drama title for the test.");
+      setTestResult(null);
+      return;
+    }
+
+    setTestLoading(true);
+    setTestResult(null);
+    setTestError(null);
+
+    try {
+      const { data } = await api.get(
+        `/dramas/test-url-scrape?title=${encodeURIComponent(testDramaTitle)}`
+      );
+      setTestResult(data);
+    } catch (err) {
+      console.error("URL Scrape Test failed:", err);
+      setTestError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.message ||
+          "Test failed."
+      );
+    } finally {
+      setTestLoading(false);
+    }
+  };
+  // ----------------------------------------
 
   const handleOpenModal = (drama) => {
     setSelectedDrama(drama);
@@ -189,6 +231,7 @@ export default function MyList() {
       <div className="min-h-screen w-full relative pt-28 md:pt-32 pb-20">
         <div className="relative z-10 px-6 space-y-10">
           <section className="max-w-2xl mx-auto pt-0">
+            <h1 className="text-3xl font-heading text-center mb-6">My List</h1>
             <form onSubmit={handleAddDrama} className="flex gap-4">
               <input
                 type="text"
@@ -218,7 +261,62 @@ export default function MyList() {
                 Fetching drama details...
               </p>
             )}
+            {/* --- NEW TEST FEATURE UI --- */}
+            <div className="mt-8 pt-6 border-t border-glass-border/30">
+              <h2 className="text-xl font-heading text-secondary-text mb-4 flex items-center gap-2">
+                <FlaskConical className="w-5 h-5" /> Test URL Scraper (LLM)
+              </h2>
+              <form onSubmit={handleTestUrlScrape} className="flex gap-4 mb-4">
+                <input
+                  type="text"
+                  value={testDramaTitle}
+                  onChange={(e) => setTestDramaTitle(e.target.value)}
+                  placeholder="Enter Title for AsianWiki lookup (e.g., Bon Appétit, Your Majesty)"
+                  className="flex-grow bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl text-foreground placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-primary-accent/50 text-sm"
+                  disabled={testLoading}
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="submit"
+                  disabled={testLoading}
+                  className="bg-primary-accent hover:bg-opacity-80 px-4 py-2 rounded-xl text-white font-bold shadow-md transition disabled:opacity-50 flex items-center justify-center text-sm"
+                >
+                  {testLoading ? (
+                    <Loader className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Test"
+                  )}
+                </motion.button>
+              </form>
+
+              {(testResult || testError) && (
+                <div className="bg-white/5 p-4 rounded-xl text-xs overflow-auto max-h-60 shadow-inner">
+                  {testError ? (
+                    <p className="text-red-300">
+                      Error: {testError.toString()}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-green-300 font-medium mb-2">
+                        Test Successful. Raw JSON Output:
+                      </p>
+                      <pre className="text-white whitespace-pre-wrap break-all">
+                        {JSON.stringify(testResult, null, 2)}
+                      </pre>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* --- END NEW TEST FEATURE UI --- */}
           </section>
+          {error && (
+            <div className="text-center bg-red-500/60 text-white p-3 rounded-lg max-w-lg mx-auto text-sm">
+              {" "}
+              {error}
+            </div>
+          )}
           <section className="flex justify-center">
             <Listbox value={selectedGenre} onChange={setSelectedGenre}>
               <div className="relative w-56">
@@ -278,12 +376,7 @@ export default function MyList() {
               </div>
             </Listbox>
           </section>
-          {error && (
-            <div className="text-center bg-red-500/60 text-white p-3 rounded-lg max-w-lg mx-auto text-sm">
-              {" "}
-              {error}
-            </div>
-          )}
+
           <div className="relative min-h-[400px]">
             {" "}
             <AnimatePresence
